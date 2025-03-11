@@ -1,0 +1,36 @@
+{
+	"name": "@nilla/cli",
+	"version": "0.0.0-alpha.1",
+	"description": "The command line interface for working with Nilla projects.",
+	"main": "dist/nilla.js",
+	"scripts": {
+		"build": "vite build",
+		"format": "prettier --write ./src/**/*.ts"
+	},
+	"bin": {
+		"nilla": "dist/index.js",
+		"lix-nilla": "dist/index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/nilla-nix/cli.git"
+	},
+	"author": "Jake Hamilton <jake.hamilton@hey.com>",
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/nilla-nix/cli/issues"
+	},
+	"homepage": "https://github.com/nilla-nix/cli#readme",
+	"dependencies": {
+		"@littlethings/log": "3.0.9",
+		"arg": "5.0.2",
+		"kleur": "4.1.5",
+		"ora": "8.2.0"
+	},
+	"devDependencies": {
+		"@types/node": "22.13.10",
+		"prettier": "3.5.3",
+		"typescript": "5.8.2",
+		"vite": "6.2.1"
+	}
+}
