@@ -26,7 +26,7 @@ nilla.create {
     packages.nilla = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      package = { lib, buildNpmPackage, ... }:
+      package = { lib, buildNpmPackage, makeWrapper, nixos-rebuild-ng, ... }:
         let
           pkg = lib.importJSON ./package.json;
         in
@@ -37,6 +37,12 @@ nilla.create {
           src = ./.;
 
           npmDepsHash = "sha256-M6hBtwaKCQMjLXeN+zUz/+jLZi0CIU+lHT/LmPhyEHg=";
+
+          nativeBuildInputs = [ makeWrapper ];
+
+          postInstall = ''
+            wrapProgram $out/bin/nilla --prefix PATH : ${nixos-rebuild-ng}/bin
+          '';
         };
     };
 
