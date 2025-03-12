@@ -1,8 +1,7 @@
 let
-  nilla = import (builtins.fetchTarball {
-    url = "https://github.com/nilla-nix/nilla/archive/main.tar.gz";
-    sha256 = "1mhyfld3phd1vv4dxccvfkz37p0ffbykdzcvvc23cfrpvi4bcdnz";
-  });
+  pins = import ./npins;
+
+  nilla = import pins.nilla;
 in
 nilla.create {
   config = {
