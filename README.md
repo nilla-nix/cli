@@ -31,7 +31,7 @@ You can add Nilla CLI as a Flake input.
 # flake.nix
 {
   inputs = {
-    nilla-cli.url = "github:nilla-nix/nilla";
+    nilla-cli.url = "github:nilla-nix/cli";
   };
 
   outputs = { nilla-cli, ... }:
