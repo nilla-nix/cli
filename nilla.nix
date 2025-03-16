@@ -8,8 +8,8 @@ nilla.create {
     inputs = {
       nixpkgs = {
         src = builtins.fetchTarball {
-          url = "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz";
-          sha256 = "0aa89pl1xs0kri9ixxg488n7riqi5n9ys89xqc0immyqshqc1d7f";
+          url = "https://github.com/NixOS/nixpkgs/archive/c80f6a7e10b39afcc1894e02ef785b1ad0b0d7e5.tar.gz";
+          sha256 = "1sfb9g6fmyfligcsd1rmkamfqvy8kgn3p0sy8ickf6swi1zdbf0b";
         };
 
         loader = "legacy";
