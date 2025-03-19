@@ -36,7 +36,7 @@ You can add Nilla CLI as a Flake input.
 
   outputs = { nilla-cli, ... }:
     let
-      nilla-cli-package = nilla-cli.nilla.packages.nilla.x86_64-linux;
+      nilla-cli-package = inputs.nilla-cli.nilla.config.packages.nilla.build.x86_64-linux;
     in
       # Do something with the package.
       {};
