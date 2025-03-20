@@ -3,9 +3,13 @@ let
 
   nilla = import pins.nilla;
 in
-nilla.create {
+nilla.create ({ config }: {
   config = {
     inputs = {
+      fenix = {
+        src = pins.fenix;
+        loader = "flake";
+      };
       nixpkgs = {
         src = pins.nixpkgs;
 
@@ -14,6 +18,9 @@ nilla.create {
         settings = {
           args = {
             system = "x86_64-linux";
+            overlays = [
+              config.inputs.fenix.loaded.overlays.default
+            ];
           };
         };
       };
@@ -22,36 +29,41 @@ nilla.create {
     packages.nilla = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      package = { lib, buildNpmPackage, makeWrapper, nixos-rebuild-ng, ... }:
+      package = { lib, pkgs, ... }:
         let
-          pkg = lib.importJSON ./package.json;
+          toolchain = pkgs.fenix.complete.toolchain;
         in
-        buildNpmPackage {
+        (pkgs.makeRustPlatform {
+            cargo = toolchain;
+            rustc = toolchain;
+        }).buildRustPackage {
           pname = "nilla";
-          version = "v${pkg.version}";
+          version = "rust-0.0.0-pre.alpha.1";
 
           src = ./.;
 
-          npmDepsHash = "sha256-M6hBtwaKCQMjLXeN+zUz/+jLZi0CIU+lHT/LmPhyEHg=";
-
-          nativeBuildInputs = [ makeWrapper ];
-
-          postInstall = ''
-            wrapProgram $out/bin/nilla --prefix PATH : ${nixos-rebuild-ng}/bin
-          '';
+          cargoLock.lockFile = ./Cargo.lock;
         };
     };
 
     shells.default = {
       systems = [ "x86_64-linux" ];
 
-      shell = { mkShell, nodejs, nixos-rebuild-ng, ... }:
+      shell = { mkShell, pkgs, ... }:
         mkShell {
           packages = [
-            nodejs
-            nixos-rebuild-ng
+            (pkgs.fenix.complete.withComponents [
+                "cargo"
+                "clippy"
+                "rust-src"
+                "rustc"
+                "rustfmt"
+                "rust-analyzer"
+            ])
+            pkgs.bacon
+            pkgs.pkg-config
           ];
         };
     };
   };
-}
+})
