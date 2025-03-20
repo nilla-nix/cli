@@ -7,10 +7,7 @@ nilla.create {
   config = {
     inputs = {
       nixpkgs = {
-        src = builtins.fetchTarball {
-          url = "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz";
-          sha256 = "0aa89pl1xs0kri9ixxg488n7riqi5n9ys89xqc0immyqshqc1d7f";
-        };
+        src = pins.nixpkgs;
 
         loader = "legacy";
 
