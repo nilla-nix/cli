@@ -8,9 +8,9 @@
         "repo": "nilla"
       },
       "branch": "main",
-      "revision": "55b9008bce4fe8f0a5b48d6553e990aad11538f1",
-      "url": "https://github.com/nilla-nix/nilla/archive/55b9008bce4fe8f0a5b48d6553e990aad11538f1.tar.gz",
-      "hash": "08kwdw5whbc2nrdygsj9z48mjabqx3biw87mrrdajyya85q1zx34"
+      "revision": "0ffd40e1811c5cec62ffe79efdcf2bc601cfdf38",
+      "url": "https://github.com/nilla-nix/nilla/archive/0ffd40e1811c5cec62ffe79efdcf2bc601cfdf38.tar.gz",
+      "hash": "1jjhg5qp4n67bdgp689jwy9gyv5v03gvazdjs4zg4id7v5yyacdz"
     },
     "nixpkgs": {
       "type": "Channel",
