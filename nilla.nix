@@ -8,20 +8,15 @@ nilla.create ({ config }: {
     inputs = {
       fenix = {
         src = pins.fenix;
-        loader = "flake";
       };
+
       nixpkgs = {
         src = pins.nixpkgs;
 
-        loader = "legacy";
-
         settings = {
-          args = {
-            system = "x86_64-linux";
-            overlays = [
-              config.inputs.fenix.loaded.overlays.default
-            ];
-          };
+          overlays = [
+            config.inputs.fenix.loaded.overlays.default
+          ];
         };
       };
     };
@@ -29,14 +24,16 @@ nilla.create ({ config }: {
     packages.nilla = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      package = { lib, pkgs, ... }:
+      package = { fenix, makeRustPlatform, ... }:
         let
-          toolchain = pkgs.fenix.complete.toolchain;
-        in
-        (pkgs.makeRustPlatform {
+          toolchain = fenix.complete.toolchain;
+
+          platform = makeRustPlatform {
             cargo = toolchain;
             rustc = toolchain;
-        }).buildRustPackage {
+          };
+        in
+        platform.buildRustPackage {
           pname = "nilla";
           version = "rust-0.0.0-pre.alpha.1";
 
@@ -49,19 +46,19 @@ nilla.create ({ config }: {
     shells.default = {
       systems = [ "x86_64-linux" ];
 
-      shell = { mkShell, pkgs, ... }:
+      shell = { mkShell, fenix, bacon, pkg-config, ... }:
         mkShell {
           packages = [
-            (pkgs.fenix.complete.withComponents [
-                "cargo"
-                "clippy"
-                "rust-src"
-                "rustc"
-                "rustfmt"
-                "rust-analyzer"
+            (fenix.complete.withComponents [
+              "cargo"
+              "clippy"
+              "rust-src"
+              "rustc"
+              "rustfmt"
+              "rust-analyzer"
             ])
-            pkgs.bacon
-            pkgs.pkg-config
+            bacon
+            pkg-config
           ];
         };
     };

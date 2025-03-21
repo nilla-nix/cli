@@ -20,15 +20,21 @@
         "repo": "nilla"
       },
       "branch": "main",
-      "revision": "633595bfde683b15311ce2d93fbd25e47a634351",
-      "url": "https://github.com/nilla-nix/nilla/archive/633595bfde683b15311ce2d93fbd25e47a634351.tar.gz",
-      "hash": "1rnbg9dg07p7hd6dilpfp4dww3bsr86kavr77nk787z7n1jw7gkz"
+      "revision": "c4e9887f668a2ba773475c33bc92e36a699b0f4b",
+      "url": "https://github.com/nilla-nix/nilla/archive/c4e9887f668a2ba773475c33bc92e36a699b0f4b.tar.gz",
+      "hash": "01rf5mcxyk6vf81s6jlbfhpn7mw0ngaclir0p4nd0hbgnyvnp5w5"
     },
     "nixpkgs": {
-      "type": "Channel",
-      "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.05pre766138.b62d2a95c72f/nixexprs.tar.xz",
-      "hash": "16h4p2p7q35wdr4ya76jix43zf14fm1qr96c6cqcaap8hm5k069q"
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixos-unstable",
+      "revision": "a84ebe20c6bc2ecbcfb000a50776219f48d134cc",
+      "url": "https://github.com/nixos/nixpkgs/archive/a84ebe20c6bc2ecbcfb000a50776219f48d134cc.tar.gz",
+      "hash": "053xxy1bn35d9088h3rznhqkqq7lnnhn4ahrilwik8l4b6k8inlq"
     }
   },
   "version": 3
