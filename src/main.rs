@@ -1,45 +1,10 @@
-use std::path::PathBuf;
+use clap::{CommandFactory, Parser};
+use nilla::Commands;
+use tokio;
 
-use clap::{CommandFactory, Parser, Subcommand};
-use nilla_cli::commands::{
-    build::BuildArgs, generate::GenerateArgs, nixos::NixosArgs, run::RunArgs, shell::ShellArgs,
-};
-
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None, allow_external_subcommands = true)]
-pub struct Cli {
-    #[command(subcommand)]
-    command: Option<Commands>,
-    #[arg(
-		long,
-		short,
-		help = "A path to the nilla project to use",
-		value_hint = clap::ValueHint::FilePath,
-		default_value = "./nilla.nix",
-		global = true
-	)]
-    project: PathBuf,
-    #[arg(
-        long,
-        short,
-        help = "The verbosity level to use",
-        default_value_t = 0,
-        global = true
-    )]
-    verbose: u8,
-}
-
-#[derive(Subcommand, Debug)]
-pub enum Commands {
-    Shell(ShellArgs),
-    Run(RunArgs),
-    Build(BuildArgs),
-    Nixos(NixosArgs),
-    Generate(GenerateArgs),
-}
-
-fn main() {
-    let cli = Cli::parse();
+#[tokio::main]
+async fn main() {
+    let cli = nilla::Cli::parse();
 
     // println!("Project: {:?}", cli.project.canonicalize());
 
@@ -50,7 +15,7 @@ fn main() {
             Commands::Build(_args) => todo!(),
             Commands::Nixos(_args) => todo!(),
             Commands::Generate(args) => {
-                nilla_cli::commands::generate::generate_cmd(args, &mut Cli::command())
+                nilla::commands::generate::generate_cmd(args, &mut nilla::Cli::command())
             }
         },
         None => todo!(),

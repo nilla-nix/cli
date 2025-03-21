@@ -21,7 +21,7 @@ nilla.create ({ config }: {
       };
     };
 
-    packages.nilla = {
+    packages.nilla-cli = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
       package = { fenix, makeRustPlatform, ... }:
