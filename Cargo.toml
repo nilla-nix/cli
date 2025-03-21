@@ -1,0 +1,12 @@
+[package]
+name = "nilla-cli"
+version = "0.0.1"
+edition = "2024"
+author = "Nilla-Nix"
+repository = "https://github.com/nilla-nix/cli"
+
+[dependencies]
+clap = { version = "4.5.32", features = ["derive"] }
+clap_complete = "4.5.47"
+clio = { version = "0.3.5", features = ["clap-parse"] }
+log = "0.4.26"
