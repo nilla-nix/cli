@@ -13,7 +13,6 @@ async fn main() {
             Commands::Shell(_args) => todo!(),
             Commands::Run(_args) => todo!(),
             Commands::Build(_args) => todo!(),
-            Commands::Nixos(_args) => todo!(),
             Commands::Completions(args) => completions::completions_cmd(args, &mut Cli::command()),
         },
         None => todo!(),

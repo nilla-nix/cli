@@ -2,7 +2,6 @@ use clap::builder::styling::Style;
 
 pub mod build;
 pub mod completions;
-pub mod nixos;
 pub mod run;
 pub mod shell;
 

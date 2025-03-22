@@ -1,10 +1,7 @@
 pub mod commands;
 
 use clap::{Parser, Subcommand};
-use commands::{
-    build::BuildArgs, completions::CompletionsArgs, nixos::NixosArgs, run::RunArgs,
-    shell::ShellArgs,
-};
+use commands::{build::BuildArgs, completions::CompletionsArgs, run::RunArgs, shell::ShellArgs};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -26,7 +23,7 @@ pub struct Cli {
     #[arg(
 		long,
 		short,
-		help = "The nilla project to use",
+		help = "The nilla project to use (check Valid project sources in the man pages)",
 		value_hint = clap::ValueHint::AnyPath,
 		default_value = "./",
 		global = true
@@ -47,7 +44,6 @@ pub enum Commands {
     Shell(ShellArgs),
     Run(RunArgs),
     Build(BuildArgs),
-    Nixos(NixosArgs),
     #[command(alias = "completion")]
     Completions(CompletionsArgs),
 }
