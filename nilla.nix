@@ -29,14 +29,16 @@ nilla.create ({ config }: {
         let
           toolchain = fenix.complete.toolchain;
 
+          manifest = (pkgs.lib.importTOML ./Cargo.toml).package;
+
           platform = makeRustPlatform {
             cargo = toolchain;
             rustc = toolchain;
           };
         in
         platform.buildRustPackage {
-          pname = "nilla";
-          version = "rust-0.0.0-pre.alpha.1";
+          pname = manifest.name;
+          version = "rust-${manifest.version}";
 
           src = ./.;
 

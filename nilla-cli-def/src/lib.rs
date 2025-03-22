@@ -1,5 +1,4 @@
 pub mod commands;
-pub mod util;
 
 use clap::{Parser, Subcommand};
 use commands::{

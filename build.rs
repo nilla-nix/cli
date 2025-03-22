@@ -1,11 +1,10 @@
-include!("src/lib.rs");
-
 use clap::CommandFactory;
+
 fn main() -> std::io::Result<()> {
     let out_dir =
         std::path::PathBuf::from(std::env::var_os("OUT_DIR").ok_or(std::io::ErrorKind::NotFound)?);
 
-    let cmd = crate::Cli::command();
+    let cmd = nilla_cli_def::Cli::command();
 
     let man = clap_mangen::Man::new(cmd);
     let mut buffer: Vec<u8> = Default::default();

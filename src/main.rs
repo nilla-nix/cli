@@ -1,10 +1,10 @@
 use clap::{CommandFactory, Parser};
-use nilla::Commands;
+use nilla_cli_def::{Cli, Commands, commands::completions};
 use tokio;
 
 #[tokio::main]
 async fn main() {
-    let cli = nilla::Cli::parse();
+    let cli = Cli::parse();
 
     // println!("Project: {:?}", cli.project.canonicalize());
 
@@ -14,9 +14,7 @@ async fn main() {
             Commands::Run(_args) => todo!(),
             Commands::Build(_args) => todo!(),
             Commands::Nixos(_args) => todo!(),
-            Commands::Completions(args) => {
-                nilla::commands::completions::completions_cmd(args, &mut nilla::Cli::command())
-            }
+            Commands::Completions(args) => completions::completions_cmd(args, &mut Cli::command()),
         },
         None => todo!(),
     }
