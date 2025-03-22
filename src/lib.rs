@@ -3,7 +3,8 @@ pub mod util;
 
 use clap::{Parser, Subcommand};
 use commands::{
-    build::BuildArgs, generate::GenerateArgs, nixos::NixosArgs, run::RunArgs, shell::ShellArgs,
+    build::BuildArgs, completions::CompletionsArgs, nixos::NixosArgs, run::RunArgs,
+    shell::ShellArgs,
 };
 
 #[derive(Parser, Debug)]
@@ -26,9 +27,9 @@ pub struct Cli {
     #[arg(
 		long,
 		short,
-		help = "A path to the nilla project to use",
-		value_hint = clap::ValueHint::FilePath,
-		default_value = "./nilla.nix",
+		help = "The nilla project to use",
+		value_hint = clap::ValueHint::AnyPath,
+		default_value = "./",
 		global = true
 	)]
     project: String,
@@ -48,5 +49,6 @@ pub enum Commands {
     Run(RunArgs),
     Build(BuildArgs),
     Nixos(NixosArgs),
-    Generate(GenerateArgs),
+    #[command(alias = "completion")]
+    Completions(CompletionsArgs),
 }

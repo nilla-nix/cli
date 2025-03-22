@@ -14,8 +14,8 @@ async fn main() {
             Commands::Run(_args) => todo!(),
             Commands::Build(_args) => todo!(),
             Commands::Nixos(_args) => todo!(),
-            Commands::Generate(args) => {
-                nilla::commands::generate::generate_cmd(args, &mut nilla::Cli::command())
+            Commands::Completions(args) => {
+                nilla::commands::completions::completions_cmd(args, &mut nilla::Cli::command())
             }
         },
         None => todo!(),

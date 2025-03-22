@@ -1,7 +1,7 @@
 use clap::Command;
 use clap_complete::{Shell, generate};
 
-pub fn generate_cmd(args: &GenerateArgs, cmd: &mut Command) {
+pub fn completions_cmd(args: &CompletionsArgs, cmd: &mut Command) {
     generate(
         args.shell,
         cmd,
@@ -12,7 +12,7 @@ pub fn generate_cmd(args: &GenerateArgs, cmd: &mut Command) {
 
 #[derive(Debug, clap::Args)]
 #[command(about = "Generate autocompletions for your shell")]
-pub struct GenerateArgs {
+pub struct CompletionsArgs {
     #[arg(long, short)]
     shell: Shell,
     #[clap(long, short, value_parser, default_value = "-")]
