@@ -21,6 +21,7 @@ nilla.create ({ config }: {
       };
     };
 
+    packages.default = config.packages.nilla-cli;
     packages.nilla-cli = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
@@ -43,7 +44,8 @@ nilla.create ({ config }: {
         };
     };
 
-    shells.default = {
+    shells.default = config.shells.nilla-cli;
+    shells.nilla-cli = {
       systems = [ "x86_64-linux" ];
 
       shell = { mkShell, fenix, bacon, pkg-config, ... }:

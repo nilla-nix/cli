@@ -20,9 +20,9 @@
         "repo": "nilla"
       },
       "branch": "main",
-      "revision": "c4e9887f668a2ba773475c33bc92e36a699b0f4b",
-      "url": "https://github.com/nilla-nix/nilla/archive/c4e9887f668a2ba773475c33bc92e36a699b0f4b.tar.gz",
-      "hash": "01rf5mcxyk6vf81s6jlbfhpn7mw0ngaclir0p4nd0hbgnyvnp5w5"
+      "revision": "bb10274f0298d6be7e5cd68d2768c72a967c65f4",
+      "url": "https://github.com/nilla-nix/nilla/archive/bb10274f0298d6be7e5cd68d2768c72a967c65f4.tar.gz",
+      "hash": "1s7aqyayi7q5572pfdn2mdv43g51n9c2mjv46p3grncrmrcgj229"
     },
     "nixpkgs": {
       "type": "Git",
