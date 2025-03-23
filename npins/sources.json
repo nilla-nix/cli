@@ -1,5 +1,17 @@
 {
   "pins": {
+    "fenix": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "fenix"
+      },
+      "branch": "monthly",
+      "revision": "f44d7c3596ff028ad9f7fcc31d1941ed585f11b3",
+      "url": "https://github.com/nix-community/fenix/archive/f44d7c3596ff028ad9f7fcc31d1941ed585f11b3.tar.gz",
+      "hash": "1axv80c6g3qg4aggggkh85nyxsw01pjdw6rlvsxm66hd25zxc779"
+    },
     "nilla": {
       "type": "Git",
       "repository": {
@@ -8,15 +20,21 @@
         "repo": "nilla"
       },
       "branch": "main",
-      "revision": "0ffd40e1811c5cec62ffe79efdcf2bc601cfdf38",
-      "url": "https://github.com/nilla-nix/nilla/archive/0ffd40e1811c5cec62ffe79efdcf2bc601cfdf38.tar.gz",
-      "hash": "1jjhg5qp4n67bdgp689jwy9gyv5v03gvazdjs4zg4id7v5yyacdz"
+      "revision": "3a6b90371c6e25c46bcb17aa38aae07923ba55fc",
+      "url": "https://github.com/nilla-nix/nilla/archive/3a6b90371c6e25c46bcb17aa38aae07923ba55fc.tar.gz",
+      "hash": "0g3qcjd48ah0bkb68l83x2gghb2yg27dpl81rxxykcd9xksv37hq"
     },
     "nixpkgs": {
-      "type": "Channel",
-      "name": "nixpkgs-unstable",
-      "url": "https://releases.nixos.org/nixpkgs/nixpkgs-25.05pre766138.b62d2a95c72f/nixexprs.tar.xz",
-      "hash": "16h4p2p7q35wdr4ya76jix43zf14fm1qr96c6cqcaap8hm5k069q"
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixos-unstable",
+      "revision": "a84ebe20c6bc2ecbcfb000a50776219f48d134cc",
+      "url": "https://github.com/nixos/nixpkgs/archive/a84ebe20c6bc2ecbcfb000a50776219f48d134cc.tar.gz",
+      "hash": "053xxy1bn35d9088h3rznhqkqq7lnnhn4ahrilwik8l4b6k8inlq"
     }
   },
   "version": 3

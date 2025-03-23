@@ -8,7 +8,7 @@
     {
       packages = {
         x86_64-linux = rec {
-          nilla = project.config.packages.nilla.build.x86_64-linux;
+          nilla = project.config.packages.nilla.result.x86_64-linux;
           default = nilla;
         };
       };

@@ -3,55 +3,69 @@ let
 
   nilla = import pins.nilla;
 in
-nilla.create {
+nilla.create ({ config }: {
   config = {
     inputs = {
+      fenix = {
+        src = pins.fenix;
+      };
+
       nixpkgs = {
         src = pins.nixpkgs;
 
-        loader = "legacy";
-
         settings = {
-          args = {
-            system = "x86_64-linux";
-          };
+          overlays = [
+            config.inputs.fenix.loaded.overlays.default
+          ];
         };
       };
     };
 
-    packages.nilla = {
+    packages.default = config.packages.nilla-cli;
+    packages.nilla-cli = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      package = { lib, buildNpmPackage, makeWrapper, nixos-rebuild-ng, ... }:
+      package = { fenix, makeRustPlatform, lib, nix-prefetch-git, ... }:
         let
-          pkg = lib.importJSON ./package.json;
+          toolchain = fenix.complete.toolchain;
+
+          manifest = (lib.importTOML ./Cargo.toml).package;
+
+          platform = makeRustPlatform {
+            cargo = toolchain;
+            rustc = toolchain;
+          };
         in
-        buildNpmPackage {
-          pname = "nilla";
-          version = "v${pkg.version}";
+        platform.buildRustPackage {
+          meta.mainProgram = "nilla";
+          pname = manifest.name;
+          version = "rust-${manifest.version}";
 
           src = ./.;
 
-          npmDepsHash = "sha256-M6hBtwaKCQMjLXeN+zUz/+jLZi0CIU+lHT/LmPhyEHg=";
-
-          nativeBuildInputs = [ makeWrapper ];
-
-          postInstall = ''
-            wrapProgram $out/bin/nilla --prefix PATH : ${nixos-rebuild-ng}/bin
-          '';
+          cargoLock.lockFile = ./Cargo.lock;
         };
     };
 
-    shells.default = {
+    shells.default = config.shells.nilla-cli;
+    shells.nilla-cli = {
       systems = [ "x86_64-linux" ];
 
-      shell = { mkShell, nodejs, nixos-rebuild-ng, ... }:
+      shell = { mkShell, fenix, bacon, pkg-config, pkgs, ... }:
         mkShell {
           packages = [
-            nodejs
-            nixos-rebuild-ng
+            (fenix.complete.withComponents [
+              "cargo"
+              "clippy"
+              "rust-src"
+              "rustc"
+              "rustfmt"
+              "rust-analyzer"
+            ])
+            bacon
+            pkg-config
           ];
         };
     };
   };
-}
+})
