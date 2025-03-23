@@ -6,8 +6,10 @@ use crate::util::nix;
 
 pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::run::RunArgs) {
     debug!("Resolving project {}", cli.project);
-    let Ok(project) = crate::util::project::resolve(&cli.project).await else {
-        return error!("Could not find project {}", cli.project);
+    let rs = crate::util::project::resolve(&cli.project).await;
+
+    let Ok(project) = rs else {
+        return error!("{:?}", rs.unwrap_err());
     };
     let mut path = project.get_path();
     debug!("Resolved project {path:?}");

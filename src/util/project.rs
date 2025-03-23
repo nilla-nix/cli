@@ -1,8 +1,12 @@
 use anyhow::{anyhow, bail};
 use log::{debug, trace};
+use serde::Serialize;
 use std::{borrow::Cow, path::PathBuf, str::FromStr};
 use url::Url;
 
+use crate::util::nix::{self, EvalResult};
+
+#[derive(Debug)]
 pub enum Source {
     Path { path: PathBuf },
     Git { info: GitInfo, path: PathBuf },
@@ -25,14 +29,16 @@ impl Source {
     }
 }
 
+#[derive(Debug, Clone, Serialize)]
 pub struct GitInfo {
     pub url: String,
-    pub rev: String,
-    pub r#ref: String,
-    pub dir: String,
+    pub rev: Option<String>,
+    pub r#ref: Option<String>,
+    pub dir: Option<String>,
     pub submodules: bool,
 }
 
+#[derive(Debug)]
 pub struct GitXInfo {
     pub owner: String,
     pub repo: String,
@@ -88,20 +94,77 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
                 let qps = url.query_pairs();
                 let info = GitInfo {
                     url: url.path().to_string(),
-                    rev: qps.clone().find(|(k, _)| k == "rev").unwrap().1.to_string(),
-                    r#ref: qps.clone().find(|(k, _)| k == "ref").unwrap().1.to_string(),
-                    dir: qps.clone().find(|(k, _)| k == "dir").unwrap().1.to_string(),
+                    rev: qps
+                        .clone()
+                        .find(|(k, _)| k == "rev")
+                        .map(|(_, v)| v.to_string()),
+                    r#ref: qps
+                        .clone()
+                        .find(|(k, _)| k == "ref")
+                        .map(|(_, v)| v.to_string()),
+                    dir: qps
+                        .clone()
+                        .find(|(k, _)| k == "dir")
+                        .map(|(_, v)| v.to_string()),
                     submodules: qps
                         .clone()
                         .find(|(k, _)| k == "submodules")
-                        .unwrap()
+                        .unwrap_or(("".into(), "false".into()))
                         .1
                         .to_string()
                         == "true",
                 };
 
-                let path = PathBuf::new();
-                return Ok(Source::Git { info, path });
+                let code = format!(
+                    "
+					let
+						info = builtins.fromJSON ''{}'';
+					in
+						builtins.fetchGit (
+							{{ url = info.url; }}
+							// (if info.rev != null then {{ rev = info.rev; }} else {{}})
+							// (if info.ref != null then {{ ref = info.ref; }} else {{}})
+							// (if info.submodules != null then {{ submodules = info.submodules; }} else {{}})
+						)
+				",
+                    serde_json::to_string(&info).unwrap()
+                );
+
+                let root = nix::evaluate(
+                    &code,
+                    nix::EvalOpts {
+                        impure: true,
+                        json: true,
+                    },
+                )
+                .await;
+
+                let root_path = match root {
+                    Ok(EvalResult::Json(res)) => res.as_str().unwrap().to_string(),
+                    Ok(EvalResult::Raw(_)) => {
+                        bail!("Got raw, expected JSON");
+                    }
+                    _ => {
+                        bail!("{}", root.unwrap_err());
+                    }
+                };
+
+                let store_path = nix::realise(&PathBuf::from(root_path)).await;
+
+                let Ok(paths) = store_path else {
+                    bail!("{}", store_path.unwrap_err());
+                };
+
+                let mut final_path = paths[0].clone();
+
+                if info.dir.is_some() {
+                    final_path.push(info.dir.clone().unwrap())
+                }
+
+                return Ok(Source::Git {
+                    info,
+                    path: final_path,
+                });
             }
             "github" => {
                 trace!("matched as github");

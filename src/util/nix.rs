@@ -25,13 +25,7 @@ pub enum EvalResult {
     Raw(String),
 }
 
-fn escape_nix_expression(code: &str) -> String {
-    code.trim().replace('\'', "'\\'")
-}
-
 pub async fn evaluate(code: &str, opts: EvalOpts) -> Result<EvalResult> {
-    let expr = format!("{}", escape_nix_expression(code));
-
     let mut args: Vec<&str> = vec![];
     args.append(&mut vec!["eval", "--show-trace"]);
 
@@ -42,7 +36,7 @@ pub async fn evaluate(code: &str, opts: EvalOpts) -> Result<EvalResult> {
         args.push("--impure");
     }
 
-    args.append(&mut vec!["--expr", &expr]);
+    args.append(&mut vec!["--expr", &code]);
 
     debug!("Running nix {}", args.join(" "));
     let output = Command::new("nix").args(args).output().await?;
@@ -83,7 +77,7 @@ pub async fn get_system() -> Result<String> {
     };
 }
 
-pub async fn realise(path: &PathBuf) -> Result<String> {
+pub async fn realise(path: &PathBuf) -> Result<Vec<PathBuf>> {
     trace!("Realising {path:?}");
     let output = Command::new("nix-store")
         .args(["--realise", path.to_str().unwrap()])
@@ -97,7 +91,10 @@ pub async fn realise(path: &PathBuf) -> Result<String> {
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 
-    Ok(stdout.to_string())
+    Ok(stdout
+        .lines()
+        .map(|i| PathBuf::from(i))
+        .collect::<Vec<PathBuf>>())
 }
 
 pub struct BuildOpts<'a> {
