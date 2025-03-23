@@ -25,11 +25,11 @@ nilla.create ({ config }: {
     packages.nilla-cli = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      package = { fenix, makeRustPlatform, importTOML, ... }:
+      package = { fenix, makeRustPlatform, lib, ... }:
         let
           toolchain = fenix.complete.toolchain;
 
-          manifest = (importTOML ./Cargo.toml).package;
+          manifest = (lib.importTOML ./Cargo.toml).package;
 
           platform = makeRustPlatform {
             cargo = toolchain;
@@ -37,6 +37,7 @@ nilla.create ({ config }: {
           };
         in
         platform.buildRustPackage {
+          meta.mainProgram = "nilla";
           pname = manifest.name;
           version = "rust-${manifest.version}";
 

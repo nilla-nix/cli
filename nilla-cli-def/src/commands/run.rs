@@ -12,4 +12,8 @@ use clap::Args;
 pub struct RunArgs {
     #[arg(help = "Name of the program to run, if left empty it will use the default")]
     pub name: Option<String>,
+    #[arg(help = "System architecture (eg: x86_64-linux)")]
+    pub system: Option<String>,
+    #[arg(allow_hyphen_values = true, num_args = 0.., last = true)]
+    pub remaining: Vec<String>,
 }

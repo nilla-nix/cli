@@ -9,13 +9,13 @@ use commands::{build::BuildArgs, completions::CompletionsArgs, run::RunArgs, she
 	version,
 	about,
 	long_about = None,
-	allow_external_subcommands = true,
 	after_help = commands::make_examples(&[
 		("Run a package from a local Nilla project.", "run mypackage"),
 		("Build a package from a Nilla project on GitHub.", "build mypackage --project github:myuser/myrepo"),
 		("Start a development shell from a Nilla project in another directory.", "shell myshell --project ~/myproject"),
 		("Build and switch to a NixOS configuration in a local Nilla project.", "nixos switch mysystem")
-	])
+	]),
+	arg_required_else_help = true
 )]
 pub struct Cli {
     #[command(subcommand)]
@@ -48,10 +48,13 @@ pub struct Cli {
 }
 
 #[derive(Subcommand, Debug)]
+#[command(allow_external_subcommands = true)]
 pub enum Commands {
     Shell(ShellArgs),
     Run(RunArgs),
     Build(BuildArgs),
     #[command(alias = "completion")]
     Completions(CompletionsArgs),
+    #[command(external_subcommand)]
+    External(Vec<String>),
 }

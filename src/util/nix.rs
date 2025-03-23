@@ -112,7 +112,7 @@ pub async fn build(file: &PathBuf, name: &str, opts: BuildOpts<'_>) -> Result<Ve
         args.push("--no-link");
     }
     if opts.report {
-        args.push("--print-out-links");
+        args.push("--print-out-paths");
     }
     args.push("-f");
     args.push(file.to_str().unwrap());
@@ -120,8 +120,8 @@ pub async fn build(file: &PathBuf, name: &str, opts: BuildOpts<'_>) -> Result<Ve
         args.push("--system");
         args.push(opts.system);
     };
-    let f_name = format!("'{name}'");
-    args.push(&f_name);
+    args.push(&name);
+    trace!("Running nix {}", args.join(" "));
     let cmd = Command::new("nix").args(args).output().await?;
 
     return Ok(String::from_utf8_lossy(&cmd.stdout)
@@ -166,10 +166,10 @@ pub async fn get_main_program(
             "
 			let
 				project = import (builtins.toPath \"{file_str}\");
-				system = \"${}\";
+				system = \"{}\";
 				name = \"{name}\";
 			in
-				project.packages.${{name}}.result.${{system}}.meta.mainProgram or ${{name}}
+				project.packages.${{name}}.result.${{system}}.meta.mainProgram or name
 			",
             if opts.system == "" {
                 get_system().await?

@@ -1,4 +1,4 @@
-use clap::Args;
+use clap::{ArgAction, Args};
 #[derive(Debug, Args)]
 #[command(
 	about = "Start a development shell from a Nilla project",
@@ -11,6 +11,17 @@ use clap::Args;
 pub struct BuildArgs {
     #[arg(help = "Name of the shell to start, if left empty it will use the default")]
     pub name: Option<String>,
+    #[arg(help = "System architecture (eg: x86_64-linux)")]
+    pub system: Option<String>,
+    #[arg(
+        long,
+		action = ArgAction::SetTrue,
+        help = "Link the build output to the current directory",
+        default_value_t = false
+    )]
+    pub no_link: bool,
+    #[arg(long, action = ArgAction::SetTrue, help = "Print out links", default_value_t = false)]
+    pub print_out_paths: bool,
 }
 
 pub fn build_cmd(_cli: &crate::Cli, _args: &BuildArgs) {}

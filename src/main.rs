@@ -52,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
         .chain(
             fern::Dispatch::new()
                 .filter(|f| f.level() != LevelFilter::Error)
-                .chain(std::io::stdout()),
+                .chain(std::io::stderr()),
         )
         .apply()?;
 
@@ -61,11 +61,14 @@ async fn main() -> anyhow::Result<()> {
     match &cli.command {
         Some(command) => match command {
             Commands::Shell(args) => nilla::commands::shell::shell_cmd(&cli, args).await,
-            Commands::Run(_args) => todo!(),
-            Commands::Build(_args) => todo!(),
+            Commands::Run(args) => nilla::commands::run::run_cmd(&cli, args).await,
+            Commands::Build(args) => nilla::commands::build::build_cmd(&cli, args).await,
             Commands::Completions(args) => completions::completions_cmd(args, &mut Cli::command()),
+            Commands::External(items) => println!("got external subcommand: {items:?}"),
         },
-        None => todo!(),
+        None => {
+            unreachable!();
+        }
     };
     Ok(())
 }

@@ -1,4 +1,4 @@
-use log::{debug, error, info, trace};
+use log::{debug, error, info};
 
 use crate::util::nix::{self, ShellOpts};
 
@@ -25,11 +25,11 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
         },
     };
 
-    let attribute = format!("shells.\"{}\".build.\"{system}\"", args.name);
+    let attribute = format!("shells.\"{}\".result.\"{system}\"", args.name);
 
     match nix::exists_in_project(&path, &attribute).await {
         Ok(false) => {
-            return error!("Shell {attribute} does not exist in project {:?}", path);
+            return error!("Shell {attribute} does not exist in project {path:?}");
         }
         Err(e) => return error!("{e:?}"),
         _ => {}

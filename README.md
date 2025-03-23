@@ -36,7 +36,7 @@ let
     url = "https://github.com/nilla-nix/cli/archive/main.tar.gz";
     sha256 = "0000000000000000000000000000000000000000000000000000";
   });
-  nilla-cli-package = nilla-cli.config.packages.nilla.build.${pkgs.system};
+  nilla-cli-package = nilla-cli.config.packages.nilla.result.${pkgs.system};
 in
 {
   environment.systemPackages = [
