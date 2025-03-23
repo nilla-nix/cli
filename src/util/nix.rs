@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, process::Stdio};
 
 use anyhow::{Result, anyhow, bail};
 use log::{debug, trace};
@@ -119,12 +119,17 @@ pub async fn build(file: &PathBuf, name: &str, opts: BuildOpts<'_>) -> Result<Ve
     };
     args.push(&name);
     trace!("Running nix {}", args.join(" "));
-    let cmd = Command::new("nix").args(args).output().await?;
+    let cmd = Command::new("nix")
+        .stdout(Stdio::null())
+        .args(args)
+        .spawn()?;
 
-    return Ok(String::from_utf8_lossy(&cmd.stdout)
-        .lines()
-        .map(|s| s.to_owned())
-        .collect());
+    return Ok(
+        String::from_utf8_lossy(&cmd.wait_with_output().await.unwrap().stdout)
+            .lines()
+            .map(|s| s.to_owned())
+            .collect(),
+    );
 }
 
 pub struct ShellOpts<'a> {

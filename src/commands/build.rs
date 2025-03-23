@@ -1,20 +1,42 @@
 use log::{debug, error, info};
+use serde_json::Value;
 
 use crate::util::nix;
 
-fn determine_build_type(path: &str) -> (String, String) {
-    if !path.contains(".") {
-        ("Package".to_string(), path.to_string())
-    } else {
-        let split = path.split('.').collect::<Vec<&str>>();
-        let build_type = split[0];
+async fn determine_build_type(path: &str, project: &str) -> (String, String) {
+    let code = format!(
+        "
+	let
+		project = import (builtins.toPath \"{}\");
+	in
+	project.{path}.name
+	",
+        project
+    );
 
-        match build_type {
-            "systems" => ("System".to_string(), split[2].to_string()),
-            "shells" => ("Shell".to_string(), split[1].to_string()),
-            "packages" => ("Package".to_string(), split[1].to_string()),
-            _ => ("Unknown attribute".to_string(), path.to_string()),
-        }
+    let real_name_value = nix::evaluate(
+        &code,
+        nix::EvalOpts {
+            json: true,
+            impure: true,
+        },
+    )
+    .await
+    .unwrap();
+
+    let real_name = match real_name_value {
+        nix::EvalResult::Json(Value::String(s)) => s,
+        _ => path.to_string(),
+    };
+
+    let split = path.split('.').collect::<Vec<&str>>();
+    let build_type = split[0];
+
+    match build_type {
+        "systems" => ("system".to_string(), real_name),
+        "shells" => ("shell".to_string(), real_name),
+        "packages" => ("package".to_string(), real_name),
+        _ => ("unknown attribute".to_string(), real_name),
     }
 }
 
@@ -59,7 +81,8 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
         Err(e) => return error!("{e:?}"),
         _ => {}
     }
-    let build_type = determine_build_type(attribute);
+
+    let build_type = determine_build_type(attribute, path.to_str().unwrap()).await;
     info!("Building {} {}", build_type.0, build_type.1);
     let out = nix::build(
         &path,

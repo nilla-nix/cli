@@ -5,9 +5,8 @@ use commands::{build::BuildArgs, completions::CompletionsArgs, run::RunArgs, she
 
 #[derive(Parser, Debug)]
 #[command(
-	author,
+	name = "nilla",
 	version,
-	about,
 	long_about = None,
 	after_help = commands::make_examples(&[
 		("Run a package from a local Nilla project.", "run mypackage"),
