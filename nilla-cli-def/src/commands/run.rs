@@ -11,5 +11,5 @@ use clap::Args;
 )]
 pub struct RunArgs {
     #[arg(help = "Name of the program to run, if left empty it will use the default")]
-    name: Option<String>,
+    pub name: Option<String>,
 }

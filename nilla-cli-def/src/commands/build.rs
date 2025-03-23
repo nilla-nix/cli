@@ -10,7 +10,7 @@ use clap::Args;
 )]
 pub struct BuildArgs {
     #[arg(help = "Name of the shell to start, if left empty it will use the default")]
-    name: Option<String>,
+    pub name: Option<String>,
 }
 
 pub fn build_cmd(_cli: &crate::Cli, _args: &BuildArgs) {}

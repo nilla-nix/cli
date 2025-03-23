@@ -14,7 +14,7 @@ pub fn completions_cmd(args: &CompletionsArgs, cmd: &mut Command) {
 #[command(about = "Generate autocompletions for your shell")]
 pub struct CompletionsArgs {
     #[arg(long, short)]
-    shell: Shell,
+    pub shell: Shell,
     #[clap(long, short, value_parser, default_value = "-")]
-    out: clio::Output,
+    pub out: clio::Output,
 }

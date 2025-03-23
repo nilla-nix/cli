@@ -12,6 +12,19 @@ pub enum Source {
     Tarball { url: String, path: PathBuf },
 }
 
+impl Source {
+    pub fn get_path(self) -> PathBuf {
+        match self {
+            Source::Path { path } => path,
+            Source::Git { info: _, path } => path,
+            Source::Github { info: _, path } => path,
+            Source::Gitlab { info: _, path } => path,
+            Source::Sourcehut { info: _, path } => path,
+            Source::Tarball { url: _, path } => path,
+        }
+    }
+}
+
 pub struct GitInfo {
     pub url: String,
     pub rev: String,
@@ -28,6 +41,14 @@ pub struct GitXInfo {
     pub host: String,
 }
 
+fn remove_filename_from_path(mut path: PathBuf) -> PathBuf {
+    if path.is_file() {
+        trace!("Yeeting {:?}", path.file_name());
+        path.pop();
+    }
+    path
+}
+
 pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
     trace!("Trying {uri} as local path");
     if uri.starts_with(".") || uri.starts_with("/") || uri.starts_with("~") {
@@ -36,7 +57,9 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
             path.canonicalize()
         } {
             debug!("Found path {}", real_path.display());
-            return Ok(Source::Path { path: real_path });
+            return Ok(Source::Path {
+                path: remove_filename_from_path(real_path),
+            });
         } else {
             bail!("Could not find path {uri}");
         }
@@ -47,7 +70,9 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
             path.canonicalize()
         } {
             debug!("Found path {}", real_path.display());
-            return Ok(Source::Path { path: real_path });
+            return Ok(Source::Path {
+                path: remove_filename_from_path(real_path),
+            });
         } else {
             bail!("Could not find path {}", &uri[4..])
         };

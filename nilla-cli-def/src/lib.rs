@@ -1,6 +1,6 @@
 pub mod commands;
 
-use clap::{Parser, Subcommand};
+use clap::{ArgAction, Parser, Subcommand};
 use commands::{build::BuildArgs, completions::CompletionsArgs, run::RunArgs, shell::ShellArgs};
 
 #[derive(Parser, Debug)]
@@ -28,15 +28,23 @@ pub struct Cli {
 		default_value = "./",
 		global = true
 	)]
-    project: String,
+    pub project: String,
     #[arg(
         long,
         short,
+		action = ArgAction::Count,
         help = "The verbosity level to use",
-        default_value_t = 0,
         global = true
     )]
-    verbose: u8,
+    pub verbose: u8,
+    #[arg(
+        long,
+        short,
+		action = ArgAction::SetTrue,
+        help = "Quiet level of the program",
+        global = true
+    )]
+    pub quiet: bool,
 }
 
 #[derive(Subcommand, Debug)]

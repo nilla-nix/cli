@@ -9,6 +9,11 @@ use clap::Args;
 	])
 )]
 pub struct ShellArgs {
-    #[arg(help = "Name of the shell to start, if left empty it will use the default")]
-    name: Option<String>,
+    #[arg(
+        help = "Name of the shell to start, if left empty it will use the default",
+        default_value = "default"
+    )]
+    pub name: String,
+    #[arg(help = "System architecture (eg: x86_64-linux)")]
+    pub system: Option<String>,
 }
