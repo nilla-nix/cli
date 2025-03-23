@@ -36,7 +36,7 @@ let
     url = "https://github.com/nilla-nix/cli/archive/main.tar.gz";
     sha256 = "0000000000000000000000000000000000000000000000000000";
   });
-  nilla-cli-package = nilla-cli.config.packages.nilla.result.${pkgs.system};
+  nilla-cli-package = nilla-cli.packages.nilla.result.${pkgs.system};
 in
 {
   environment.systemPackages = [
@@ -58,7 +58,7 @@ You can add Nilla CLI as a Flake input.
 
   outputs = { nilla-cli, ... }:
     let
-      nilla-cli-package = inputs.nilla-cli.packages.x86_64-linux.nilla;
+      nilla-cli-package = nilla-cli.packages.x86_64-linux.nilla-cli;
     in
       # Do something with the package.
       {};
