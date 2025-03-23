@@ -15,7 +15,7 @@ nilla.create ({ config }: {
 
         settings = {
           overlays = [
-            config.inputs.fenix.loaded.overlays.default
+            config.inputs.fenix.result.overlays.default
           ];
         };
       };
