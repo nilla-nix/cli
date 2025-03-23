@@ -25,7 +25,7 @@ nilla.create ({ config }: {
     packages.nilla-cli = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      package = { fenix, makeRustPlatform, lib, nix-prefetch-git, ... }:
+      package = { fenix, makeRustPlatform, lib, ... }:
         let
           toolchain = fenix.complete.toolchain;
 
@@ -39,7 +39,7 @@ nilla.create ({ config }: {
         platform.buildRustPackage {
           meta.mainProgram = "nilla";
           pname = manifest.name;
-          version = "rust-${manifest.version}";
+          version = manifest.version;
 
           src = ./.;
 
@@ -51,7 +51,7 @@ nilla.create ({ config }: {
     shells.nilla-cli = {
       systems = [ "x86_64-linux" ];
 
-      shell = { mkShell, fenix, bacon, pkg-config, pkgs, ... }:
+      shell = { mkShell, fenix, bacon, pkg-config, ... }:
         mkShell {
           packages = [
             (fenix.complete.withComponents [
