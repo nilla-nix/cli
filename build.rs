@@ -45,16 +45,6 @@ fn main() -> std::io::Result<()> {
 
       gitlab:<owner>/<repo>?rev=<rev>&dir=<dir>
 
-  sourcehut
-
-    Fetch a Nilla project from a Sourcehut repository. This follows the format:
-
-      sourcehut:<owner>/<repo>
-
-    Optionally, additional customization can be applied using query parameters:
-
-      sourcehut:<owner>/<repo>?rev=<rev>&dir=<dir>
-
   tarball
 
     Fetch a Nilla project from a tarball. This follows the format:
