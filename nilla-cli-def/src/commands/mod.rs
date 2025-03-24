@@ -4,6 +4,7 @@ pub mod build;
 pub mod completions;
 pub mod run;
 pub mod shell;
+pub mod show;
 
 const HEADER_STYLE: Style = Style::new().bold().underline();
 const DIM_STYLE: Style = Style::new().dimmed();

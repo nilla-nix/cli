@@ -1,7 +1,7 @@
 pub mod commands;
 
 use clap::{ArgAction, Parser, Subcommand};
-use commands::{build::BuildArgs, completions::CompletionsArgs, run::RunArgs, shell::ShellArgs};
+use commands::{build::BuildArgs, completions::CompletionsArgs, run::RunArgs, shell::ShellArgs, show::ShowArgs};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -49,6 +49,7 @@ pub struct Cli {
 #[derive(Subcommand, Debug)]
 #[command(allow_external_subcommands = true)]
 pub enum Commands {
+    Show(ShowArgs),
     Shell(ShellArgs),
     Run(RunArgs),
     Build(BuildArgs),

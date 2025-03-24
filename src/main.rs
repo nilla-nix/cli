@@ -60,6 +60,7 @@ async fn main() -> anyhow::Result<()> {
 
     match &cli.command {
         Some(command) => match command {
+            Commands::Show(args) => nilla::commands::show::show_cmd(&cli, args).await,
             Commands::Shell(args) => nilla::commands::shell::shell_cmd(&cli, args).await,
             Commands::Run(args) => nilla::commands::run::run_cmd(&cli, args).await,
             Commands::Build(args) => nilla::commands::build::build_cmd(&cli, args).await,

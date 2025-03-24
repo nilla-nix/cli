@@ -1,11 +1,11 @@
 [package]
 name = "nilla"
-version = "0.0.0-alpha.4"
+version = "0.0.0-alpha.5"
 edition = "2024"
 repository = "https://github.com/nilla-nix/cli"
 
 [dependencies]
-nilla-cli-def = { version = "0.0.0-alpha.4", path = "./nilla-cli-def" }
+nilla-cli-def = { version = "0.0.0-alpha.5", path = "./nilla-cli-def" }
 anyhow = "1.0.97"
 clap = { version = "4.5.32", features = ["derive"] }
 log = "0.4.26"
@@ -18,8 +18,10 @@ regex = "1.11.1"
 once_cell = "1.21.1"
 lazy_static = "1.5.0"
 fern = { version = "0.7.1", features = ["colored"] }
+colored = "3.0.0"
+prettytable-rs = "0.10.0"
 
 [build-dependencies]
-nilla-cli-def = { version = "0.0.0-alpha.4", path = "./nilla-cli-def" }
+nilla-cli-def = { version = "0.0.0-alpha.5", path = "./nilla-cli-def" }
 clap = { version = "4.5.32", features = ["derive"] }
 clap_mangen = "0.2.26"
