@@ -6,21 +6,52 @@ use url::Url;
 
 use crate::util::nix::{self, EvalResult};
 
-#[derive(Debug)]
+use super::nix::FixedOutputStoreEntry;
+
+#[derive(Debug, Clone)]
 pub enum Source {
-    Path { path: PathBuf },
-    Git { info: GitInfo, path: PathBuf },
-    Sourcehut { info: GitXInfo, path: PathBuf },
-    Tarball { url: String, path: PathBuf },
+    Path {
+        entry: FixedOutputStoreEntry,
+    },
+    Git {
+        info: GitInfo,
+        entry: FixedOutputStoreEntry,
+    },
+    Sourcehut {
+        info: GitXInfo,
+        entry: FixedOutputStoreEntry,
+    },
+    Tarball {
+        url: String,
+        entry: FixedOutputStoreEntry,
+    },
 }
 
 impl Source {
     pub fn get_path(self) -> PathBuf {
         match self {
-            Source::Path { path } => path,
-            Source::Git { info: _, path } => path,
-            Source::Sourcehut { info: _, path } => path,
-            Source::Tarball { url: _, path } => path,
+            Source::Path { entry } => entry.path,
+            Source::Git { info: _, entry } => entry.path,
+            Source::Sourcehut { info: _, entry } => entry.path,
+            Source::Tarball { url: _, entry } => entry.path,
+        }
+    }
+
+    pub fn get_hash(self) -> String {
+        match self {
+            Source::Path { entry } => entry.hash,
+            Source::Git { info: _, entry } => entry.hash,
+            Source::Sourcehut { info: _, entry } => entry.hash,
+            Source::Tarball { url: _, entry } => entry.hash,
+        }
+    }
+
+    pub fn get_entry(self) -> FixedOutputStoreEntry {
+        match self {
+            Source::Path { entry } => entry,
+            Source::Git { info: _, entry } => entry,
+            Source::Sourcehut { info: _, entry } => entry,
+            Source::Tarball { url: _, entry } => entry,
         }
     }
 }
@@ -34,7 +65,7 @@ pub struct GitInfo {
     pub submodules: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GitXInfo {
     pub owner: String,
     pub repo: String,
@@ -57,7 +88,7 @@ impl From<GitXInfo> for GitInfo {
     }
 }
 
-fn remove_filename_from_path(mut path: PathBuf) -> PathBuf {
+pub fn remove_filename_from_path(mut path: PathBuf) -> PathBuf {
     if path.is_file() {
         trace!("Splicing off {:?}", path.file_name());
         path.pop();
@@ -115,7 +146,10 @@ async fn resolve_git(info: GitInfo) -> anyhow::Result<Source> {
 
     return Ok(Source::Git {
         info,
-        path: final_path,
+        entry: FixedOutputStoreEntry {
+            path: final_path.clone(),
+            hash: nix::get_store_hash(&final_path).await?,
+        },
     });
 }
 
@@ -155,7 +189,10 @@ async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
 
     return Ok(Source::Tarball {
         url: url.to_string(),
-        path: paths[0].clone(),
+        entry: FixedOutputStoreEntry {
+            path: paths[0].clone(),
+            hash: nix::get_store_hash(&paths[0]).await?,
+        },
     });
 }
 
@@ -167,9 +204,18 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
             path.canonicalize()
         } {
             debug!("Found path {}", real_path.display());
-            return Ok(Source::Path {
-                path: remove_filename_from_path(real_path),
-            });
+
+            let dir_path = remove_filename_from_path(real_path.clone());
+
+            match nix::add_to_store(&dir_path).await {
+                Ok(entry) => {
+                    debug!("Added {real_path:?} to store as {:?}", entry.path);
+                    return Ok(Source::Path { entry });
+                }
+                _ => {
+                    bail!("Could not add {real_path:?} to store");
+                }
+            }
         } else {
             bail!("Could not find path {uri}");
         }
@@ -180,9 +226,18 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
             path.canonicalize()
         } {
             debug!("Found path {}", real_path.display());
-            return Ok(Source::Path {
-                path: remove_filename_from_path(real_path),
-            });
+
+            let dir_path = remove_filename_from_path(real_path.clone());
+
+            match nix::add_to_store(&dir_path).await {
+                Ok(entry) => {
+                    debug!("Added {real_path:?} to store as {:?}", entry.path);
+                    return Ok(Source::Path { entry });
+                }
+                _ => {
+                    bail!("Could not add {real_path:?} to store");
+                }
+            }
         } else {
             bail!("Could not find path {}", &uri[4..])
         };

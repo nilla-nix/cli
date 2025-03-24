@@ -7,7 +7,10 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
         return error!("Could not find project {}", cli.project);
     };
+
+    let entry = project.clone().get_entry();
     let mut path = project.get_path();
+
     debug!("Resolved project {path:?}");
 
     path.push("nilla.nix");
@@ -27,7 +30,7 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
 
     let attribute = format!("shells.\"{}\".result.\"{system}\"", args.name);
 
-    match nix::exists_in_project(&path, &attribute).await {
+    match nix::exists_in_project("nilla.nix", entry.clone(), &attribute).await {
         Ok(false) => {
             return error!("Shell {attribute} does not exist in project {path:?}");
         }

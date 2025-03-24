@@ -11,7 +11,10 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
     let Ok(project) = rs else {
         return error!("{:?}", rs.unwrap_err());
     };
+
+    let entry = project.clone().get_entry();
     let mut path = project.get_path();
+
     debug!("Resolved project {path:?}");
 
     path.push("nilla.nix");
@@ -37,7 +40,7 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
         None => (&format!("packages.default.result.\"{system}\""), "default"),
     };
 
-    match nix::exists_in_project(&path, &attribute).await {
+    match nix::exists_in_project("nilla.nix", entry.clone(), &attribute).await {
         Ok(false) => {
             return error!("Attribute {attribute} does not exist in project {path:?}");
         }
@@ -64,8 +67,13 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
         return error!("Package has no outputs");
     }
 
-    let main_prog =
-        nix::get_main_program(&path, &name, nix::GetMainProgramOpts { system: &system }).await;
+    let main_prog = nix::get_main_program(
+        path.iter().last().take().unwrap().to_str().unwrap(),
+        entry.clone(),
+        &name,
+        nix::GetMainProgramOpts { system: &system },
+    )
+    .await;
 
     let Ok(main) = main_prog else {
         return error!("{:?}", main_prog.err());

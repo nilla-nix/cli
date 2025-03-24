@@ -5,7 +5,7 @@ use prettytable::{Attr, Cell, Row, Table, format};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::util::nix::{EvalOpts, EvalResult, evaluate};
+use crate::util::nix::{EvalOpts, EvalResult, FixedOutputStoreEntry, evaluate};
 
 use colored::Colorize;
 
@@ -86,14 +86,19 @@ fn show_entry(entry: ExplainEntry) {
     println!();
 }
 
-async fn show_attribute(project: &str, attribute: &str) {
+async fn show_attribute(file: &str, entry: FixedOutputStoreEntry, attribute: &str) {
     trace!("Getting explain entry for {attribute}");
+
+    let file_str = entry.path.to_str().unwrap();
+
+    let hash = entry.hash;
 
     let raw_entry = evaluate(
         &format!(
             "
     let
-        project = import (builtins.toPath \"{project}\");
+        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+        project = import \"${{source}}/{file}\";
         attribute = \"{attribute}\";
     in
         project.explain.\"${{attribute}}\".result or null
@@ -101,7 +106,7 @@ async fn show_attribute(project: &str, attribute: &str) {
         ),
         EvalOpts {
             json: true,
-            impure: true,
+            impure: false,
         },
     )
     .await;
@@ -133,7 +138,10 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
         return error!("Could not find project {}", cli.project);
     };
+
+    let entry = project.clone().get_entry();
     let mut path = project.get_path();
+
     debug!("Resolved project {path:?}");
 
     path.push("nilla.nix");
@@ -143,7 +151,9 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
         _ => {}
     }
 
-    let project_str = path.to_str().unwrap();
+    let file_str = entry.path.to_str().unwrap();
+
+    let hash = entry.clone().hash;
 
     match &args.name {
         Some(name) => {
@@ -151,7 +161,8 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 &format!(
                     "
     let
-        project = import (builtins.toPath \"{project_str}\");
+        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+        project = import \"${{source}}/nilla.nix\";
         attribute = \"{name}\";
     in
         project.explain ? ${{attribute}}
@@ -159,7 +170,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 ),
                 EvalOpts {
                     json: true,
-                    impure: true,
+                    impure: false,
                 },
             )
             .await;
@@ -168,7 +179,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 Ok(EvalResult::Json(Value::Bool(true))) => {
                     info!("Showing information about {} in {}", name, cli.project);
                     println!();
-                    show_attribute(project_str, name.as_str()).await;
+                    show_attribute("nilla.nix", entry.clone(), name.as_str()).await;
                 }
                 Ok(EvalResult::Json(Value::Bool(false))) => {
                     info!("No information available for {name}");
@@ -187,7 +198,8 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 &format!(
                     "
     let
-        project = import (builtins.toPath \"{project_str}\");
+        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+        project = import \"${{source}}/nilla.nix\";
         reserved = [ \"assertions\" \"warnings\" \"extend\" \"explain\" ];
     in
         builtins.attrNames (builtins.removeAttrs project reserved)
@@ -195,7 +207,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 ),
                 EvalOpts {
                     json: true,
-                    impure: true,
+                    impure: false,
                 },
             )
             .await;
@@ -217,7 +229,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
             debug!("Got all names {str_names:?}");
 
             for name in str_names {
-                show_attribute(project_str, name).await;
+                show_attribute("nilla.nix", entry.clone(), name).await;
             }
         }
     };

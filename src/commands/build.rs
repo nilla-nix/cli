@@ -1,24 +1,31 @@
 use log::{debug, error, info};
 use serde_json::Value;
 
-use crate::util::nix;
+use crate::util::nix::{self, FixedOutputStoreEntry};
 
-async fn determine_build_type(path: &str, project: &str) -> (String, String) {
+async fn determine_build_type(
+    attribute: &str,
+    file: &str,
+    entry: FixedOutputStoreEntry,
+) -> (String, String) {
+    let hash = entry.hash;
+
     let code = format!(
         "
 	let
-		project = import (builtins.toPath \"{}\");
+    source = builtins.path {{ path = \"{}\"; sha256 = \"{hash}\"; }};
+    project = import \"${{source}}/{file}\";
 	in
-	project.{path}.name
+	  project.{attribute}.name
 	",
-        project
+        entry.path.to_str().unwrap()
     );
 
     let real_name_value = nix::evaluate(
         &code,
         nix::EvalOpts {
             json: true,
-            impure: true,
+            impure: false,
         },
     )
     .await
@@ -26,10 +33,10 @@ async fn determine_build_type(path: &str, project: &str) -> (String, String) {
 
     let real_name = match real_name_value {
         nix::EvalResult::Json(Value::String(s)) => s,
-        _ => path.to_string(),
+        _ => attribute.to_string(),
     };
 
-    let split = path.split('.').collect::<Vec<&str>>();
+    let split = attribute.split('.').collect::<Vec<&str>>();
     let build_type = split[0];
 
     match build_type {
@@ -41,11 +48,14 @@ async fn determine_build_type(path: &str, project: &str) -> (String, String) {
 }
 
 pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::build::BuildArgs) {
-    debug!("Resolving project {}", cli.project);
+    info!("Resolving project {}", cli.project);
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
         return error!("Could not find project {}", cli.project);
     };
+
+    let entry = project.clone().get_entry();
     let mut path = project.get_path();
+
     debug!("Resolved project {path:?}");
 
     path.push("nilla.nix");
@@ -74,7 +84,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
         None => &format!("packages.default.result.\"{system}\""),
     };
 
-    match nix::exists_in_project(&path, &attribute).await {
+    match nix::exists_in_project("nilla.nix", entry.clone(), &attribute).await {
         Ok(false) => {
             return error!("Attribute {attribute} does not exist in project {path:?}");
         }
@@ -82,7 +92,12 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
         _ => {}
     }
 
-    let build_type = determine_build_type(attribute, path.to_str().unwrap()).await;
+    let build_type = determine_build_type(
+        attribute,
+        path.iter().last().unwrap().to_str().unwrap(),
+        entry.clone(),
+    )
+    .await;
     info!("Building {} {}", build_type.0, build_type.1);
     let out = nix::build(
         &path,
