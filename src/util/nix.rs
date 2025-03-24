@@ -120,7 +120,7 @@ pub async fn build(file: &PathBuf, name: &str, opts: BuildOpts<'_>) -> Result<Ve
     args.push(&name);
     trace!("Running nix {}", args.join(" "));
     let cmd = Command::new("nix")
-        .stdout(Stdio::null())
+        .stdout(Stdio::piped())
         .args(args)
         .spawn()?;
 
