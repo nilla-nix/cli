@@ -1,11 +1,11 @@
 [package]
 name = "nilla"
-version = "0.0.0-alpha.5"
+version = "0.0.0-alpha.6"
 edition = "2024"
 repository = "https://github.com/nilla-nix/cli"
 
 [dependencies]
-nilla-cli-def = { version = "0.0.0-alpha.5", path = "./nilla-cli-def" }
+nilla-cli-def = { version = "0.0.0-alpha.6", path = "./nilla-cli-def" }
 anyhow = "1.0.97"
 clap = { version = "4.5.32", features = ["derive"] }
 log = "0.4.26"
@@ -22,6 +22,6 @@ colored = "3.0.0"
 prettytable-rs = "0.10.0"
 
 [build-dependencies]
-nilla-cli-def = { version = "0.0.0-alpha.5", path = "./nilla-cli-def" }
+nilla-cli-def = { version = "0.0.0-alpha.6", path = "./nilla-cli-def" }
 clap = { version = "4.5.32", features = ["derive"] }
 clap_mangen = "0.2.26"
