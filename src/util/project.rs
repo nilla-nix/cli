@@ -1,10 +1,14 @@
 use anyhow::{anyhow, bail};
-use log::{debug, trace};
+use log::{debug, trace, warn};
 use serde::Serialize;
 use std::{borrow::Cow, path::PathBuf, str::FromStr};
 use url::Url;
 
-use crate::util::nix::{self, EvalResult};
+use crate::util::{
+    git,
+    nix::{self, EvalResult},
+    search::search_up_for_file,
+};
 
 use super::nix::FixedOutputStoreEntry;
 
@@ -153,6 +157,67 @@ async fn resolve_git(info: GitInfo) -> anyhow::Result<Source> {
     });
 }
 
+async fn resolve_git_path(path: &PathBuf) -> anyhow::Result<Source> {
+    trace!("Resolving git path for {path:?}");
+
+    let untracked = git::get_untracked_files(&path).await?;
+
+    if !untracked.is_empty() {
+        warn!("Untracked files in {path:?} will not be available within Nix");
+        for file in untracked {
+            warn!("  {}", file.to_str().unwrap());
+        }
+        warn!("");
+        warn!(
+            "If you experience issues, try adding these files to your git repository with `git add`"
+        );
+    }
+
+    let code = format!(
+        "
+		let
+      path = builtins.toPath \"{}\";
+		in
+			builtins.fetchGit path
+	",
+        path.to_str().unwrap()
+    );
+
+    let root = nix::evaluate(
+        &code,
+        nix::EvalOpts {
+            impure: true,
+            json: true,
+        },
+    )
+    .await;
+
+    let root_path = match root {
+        Ok(EvalResult::Json(res)) => res.as_str().unwrap().to_string(),
+        Ok(EvalResult::Raw(_)) => {
+            bail!("Got raw, expected JSON");
+        }
+        _ => {
+            bail!("{}", root.unwrap_err());
+        }
+    };
+
+    let store_path = nix::realise(&PathBuf::from(root_path)).await;
+
+    let Ok(paths) = store_path else {
+        bail!("{}", store_path.unwrap_err());
+    };
+
+    let final_path = paths[0].clone();
+
+    return Ok(Source::Path {
+        entry: FixedOutputStoreEntry {
+            path: final_path.clone(),
+            hash: nix::get_store_hash(&final_path).await?,
+        },
+    });
+}
+
 async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
     let code = format!(
         "
@@ -207,13 +272,28 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
 
             let dir_path = remove_filename_from_path(real_path.clone());
 
-            match nix::add_to_store(&dir_path).await {
-                Ok(entry) => {
-                    debug!("Added {real_path:?} to store as {:?}", entry.path);
-                    return Ok(Source::Path { entry });
-                }
-                _ => {
-                    bail!("Could not add {real_path:?} to store");
+            let Some(resolved_path) = search_up_for_file(&dir_path, "nilla.nix") else {
+                bail!("Could not find nilla.nix in {dir_path:?}");
+            };
+
+            let resolved_dir_path = remove_filename_from_path(resolved_path.clone());
+
+            let is_git_dir = resolved_dir_path.join(".git").is_dir();
+
+            if is_git_dir {
+                let source = resolve_git_path(&resolved_dir_path).await?;
+
+                return Ok(source);
+            } else {
+                match nix::add_to_store(&resolved_dir_path).await {
+                    Ok(entry) => {
+                        debug!("Added {real_path:?} to store as {:?}", entry.path);
+
+                        return Ok(Source::Path { entry });
+                    }
+                    _ => {
+                        bail!("Could not add {real_path:?} to store");
+                    }
                 }
             }
         } else {
@@ -229,13 +309,27 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
 
             let dir_path = remove_filename_from_path(real_path.clone());
 
-            match nix::add_to_store(&dir_path).await {
-                Ok(entry) => {
-                    debug!("Added {real_path:?} to store as {:?}", entry.path);
-                    return Ok(Source::Path { entry });
-                }
-                _ => {
-                    bail!("Could not add {real_path:?} to store");
+            let Some(resolved_path) = search_up_for_file(&dir_path, "nilla.nix") else {
+                bail!("Could not find nilla.nix in {dir_path:?}");
+            };
+
+            let resolved_dir_path = remove_filename_from_path(resolved_path.clone());
+
+            let is_git_dir = resolved_dir_path.join(".git").is_dir();
+
+            if is_git_dir {
+                let source = resolve_git_path(&resolved_dir_path).await?;
+
+                return Ok(source);
+            } else {
+                match nix::add_to_store(&resolved_path).await {
+                    Ok(entry) => {
+                        debug!("Added {real_path:?} to store as {:?}", entry.path);
+                        return Ok(Source::Path { entry });
+                    }
+                    _ => {
+                        bail!("Could not add {real_path:?} to store");
+                    }
                 }
             }
         } else {
