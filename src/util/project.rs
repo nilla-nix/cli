@@ -1,7 +1,11 @@
 use anyhow::{anyhow, bail};
 use log::{debug, trace, warn};
 use serde::Serialize;
-use std::{borrow::Cow, path::PathBuf, str::FromStr};
+use std::{
+    borrow::Cow,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 use url::Url;
 
 use crate::util::{
@@ -92,7 +96,11 @@ impl From<GitXInfo> for GitInfo {
     }
 }
 
-pub fn remove_filename_from_path(mut path: PathBuf) -> PathBuf {
+pub fn remove_filename_from_path<P>(path: P) -> PathBuf
+where
+    P: Into<PathBuf>,
+{
+    let mut path: PathBuf = path.into();
     if path.is_file() {
         trace!("Splicing off {:?}", path.file_name());
         path.pop();
@@ -136,7 +144,7 @@ async fn resolve_git(info: GitInfo) -> anyhow::Result<Source> {
         }
     };
 
-    let store_path = nix::realise(&PathBuf::from(root_path)).await;
+    let store_path = nix::realise(root_path).await;
 
     let Ok(paths) = store_path else {
         bail!("{}", store_path.unwrap_err());
@@ -157,10 +165,14 @@ async fn resolve_git(info: GitInfo) -> anyhow::Result<Source> {
     });
 }
 
-async fn resolve_git_path(path: &PathBuf) -> anyhow::Result<Source> {
+async fn resolve_git_path<P>(path: P) -> anyhow::Result<Source>
+where
+    P: AsRef<Path>,
+{
+    let path: &Path = path.as_ref();
     trace!("Resolving git path for {path:?}");
 
-    let untracked = git::get_untracked_files(&path).await?;
+    let untracked = git::get_untracked_files(path).await?;
 
     if !untracked.is_empty() {
         warn!("Untracked files in {path:?} will not be available within Nix");
@@ -202,7 +214,7 @@ async fn resolve_git_path(path: &PathBuf) -> anyhow::Result<Source> {
         }
     };
 
-    let store_path = nix::realise(&PathBuf::from(root_path)).await;
+    let store_path = nix::realise(root_path).await;
 
     let Ok(paths) = store_path else {
         bail!("{}", store_path.unwrap_err());
@@ -213,7 +225,7 @@ async fn resolve_git_path(path: &PathBuf) -> anyhow::Result<Source> {
     return Ok(Source::Path {
         entry: FixedOutputStoreEntry {
             path: final_path.clone(),
-            hash: nix::get_store_hash(&final_path).await?,
+            hash: nix::get_store_hash(final_path).await?,
         },
     });
 }
@@ -246,7 +258,7 @@ async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
         }
     };
 
-    let store_path = nix::realise(&PathBuf::from(root_path)).await;
+    let store_path = nix::realise(root_path).await;
 
     let Ok(paths) = store_path else {
         bail!("{}", store_path.unwrap_err());

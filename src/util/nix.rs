@@ -1,4 +1,7 @@
-use std::{path::PathBuf, process::Stdio};
+use std::{
+    path::{Path, PathBuf},
+    process::Stdio,
+};
 
 use anyhow::{Result, anyhow, bail};
 use log::{debug, trace};
@@ -85,7 +88,11 @@ pub async fn get_system() -> Result<String> {
     };
 }
 
-pub async fn get_path_hash(path: &PathBuf) -> Result<String> {
+pub async fn get_path_hash<P>(path: P) -> Result<String>
+where
+    P: Into<PathBuf>,
+{
+    let path: PathBuf = path.into();
     trace!("Getting hash for {path:?}");
 
     let dir = remove_filename_from_path(path.clone());
@@ -105,7 +112,11 @@ pub async fn get_path_hash(path: &PathBuf) -> Result<String> {
     Ok(stdout.trim().to_string())
 }
 
-pub async fn get_file_hash(path: &PathBuf) -> Result<String> {
+pub async fn get_file_hash<P>(path: P) -> Result<String>
+where
+    P: Into<PathBuf>,
+{
+    let path: PathBuf = path.into();
     trace!("Getting hash for {path:?}");
 
     let output = Command::new("nix")
@@ -123,7 +134,11 @@ pub async fn get_file_hash(path: &PathBuf) -> Result<String> {
     Ok(stdout.trim().to_string())
 }
 
-pub async fn get_store_hash(path: &PathBuf) -> Result<String> {
+pub async fn get_store_hash<P>(path: P) -> Result<String>
+where
+    P: Into<PathBuf>,
+{
+    let path: PathBuf = path.into();
     trace!("Getting hash for {path:?}");
 
     let dir = remove_filename_from_path(path.clone());
@@ -147,7 +162,11 @@ pub async fn get_store_hash(path: &PathBuf) -> Result<String> {
     Ok(hash)
 }
 
-pub async fn add_to_store(path: &PathBuf) -> Result<FixedOutputStoreEntry> {
+pub async fn add_to_store<P>(path: P) -> Result<FixedOutputStoreEntry>
+where
+    P: Into<PathBuf>,
+{
+    let path: PathBuf = path.into();
     trace!("Adding {path:?} to store");
 
     let output = Command::new("nix-store")
@@ -176,7 +195,11 @@ pub async fn add_to_store(path: &PathBuf) -> Result<FixedOutputStoreEntry> {
     })
 }
 
-pub async fn realise(path: &PathBuf) -> Result<Vec<PathBuf>> {
+pub async fn realise<P>(path: P) -> Result<Vec<PathBuf>>
+where
+    P: Into<PathBuf> + std::fmt::Debug,
+{
+    let path: PathBuf = path.into();
     trace!("Realising {path:?}");
     let output = Command::new("nix-store")
         .args(["--realise", path.to_str().unwrap()])
@@ -202,7 +225,10 @@ pub struct BuildOpts<'a> {
     pub system: &'a str,
 }
 
-pub async fn build(file: &PathBuf, name: &str, opts: BuildOpts<'_>) -> Result<Vec<String>> {
+pub async fn build<P>(file: P, name: &str, opts: BuildOpts<'_>) -> Result<Vec<String>>
+where
+    P: AsRef<Path>,
+{
     let mut args = vec!["build"];
     if !opts.link {
         args.push("--no-link");
@@ -211,7 +237,7 @@ pub async fn build(file: &PathBuf, name: &str, opts: BuildOpts<'_>) -> Result<Ve
         args.push("--print-out-paths");
     }
     args.push("-f");
-    args.push(file.to_str().unwrap());
+    args.push(file.as_ref().to_str().unwrap());
     if opts.system != "" {
         args.push("--system");
         args.push(opts.system);
@@ -235,8 +261,11 @@ pub struct ShellOpts<'a> {
     pub system: &'a str,
 }
 
-pub fn shell(file: &PathBuf, name: &str, opts: ShellOpts<'_>) {
-    let mut args = vec![file.to_str().unwrap()];
+pub fn shell<P>(file: P, name: &str, opts: ShellOpts<'_>)
+where
+    P: AsRef<Path>,
+{
+    let mut args = vec![file.as_ref().to_str().unwrap()];
     if opts.system != "" {
         args.push("--system");
         args.push(opts.system);

@@ -82,7 +82,7 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
     let mut binary_path = PathBuf::from(value[0].clone());
     binary_path.push("bin");
     binary_path.push(main);
-    trace!("Binary path: {:?}", binary_path.as_os_str());
+    trace!("Binary path: {:?}", path.as_os_str());
     info!("Running Package {name}");
 
     let command_args = &args.remaining;
