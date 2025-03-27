@@ -33,10 +33,17 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
     };
 
     let (attribute, name) = match &args.name {
-        Some(name) => (
-            &format!("packages.\"{name}\".result.\"{system}\""),
-            name.as_str(),
-        ),
+        Some(name) => {
+            if name.contains('.') {
+                let sp = name.split('.').collect::<Vec<&str>>();
+                (name, sp[1])
+            } else {
+                (
+                    &format!("packages.\"{name}\".result.\"{system}\""),
+                    name.as_str(),
+                )
+            }
+        }
         None => (&format!("packages.default.result.\"{system}\""), "default"),
     };
 
