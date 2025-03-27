@@ -1,7 +1,9 @@
 pub mod commands;
 
 use clap::{ArgAction, Parser, Subcommand};
-use commands::{build::BuildArgs, completions::CompletionsArgs, run::RunArgs, shell::ShellArgs, show::ShowArgs};
+use commands::{
+    build::BuildArgs, completions::CompletionsArgs, run::RunArgs, shell::ShellArgs, show::ShowArgs,
+};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -44,6 +46,14 @@ pub struct Cli {
         global = true
     )]
     pub quiet: bool,
+    #[arg(
+        long,
+		action = ArgAction::SetTrue,
+        help = "Log any ran eval commands",
+        global = true,
+		default_value_t = false,
+    )]
+    pub show_eval_commands: bool,
 }
 
 #[derive(Subcommand, Debug)]

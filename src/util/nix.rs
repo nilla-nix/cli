@@ -4,7 +4,7 @@ use std::{
 };
 
 use anyhow::{Result, anyhow, bail};
-use log::{debug, trace};
+use log::{debug, info, trace};
 use serde_json::Value;
 use tokio::process::Command;
 
@@ -37,6 +37,10 @@ pub struct FixedOutputStoreEntry {
 }
 
 pub async fn evaluate(code: &str, opts: EvalOpts) -> Result<EvalResult> {
+    if <nilla_cli_def::Cli as clap::Parser>::parse().show_eval_commands {
+        info!("{code}");
+    }
+
     let mut args: Vec<&str> = vec![];
     args.append(&mut vec!["eval", "--show-trace"]);
 
