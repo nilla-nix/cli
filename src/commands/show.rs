@@ -106,7 +106,7 @@ async fn show_attribute(file: &str, entry: FixedOutputStoreEntry, attribute: &st
         ),
         EvalOpts {
             json: true,
-            impure: false,
+            impure: true,
         },
     )
     .await;
@@ -170,7 +170,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 ),
                 EvalOpts {
                     json: true,
-                    impure: false,
+                    impure: true,
                 },
             )
             .await;
@@ -207,7 +207,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 ),
                 EvalOpts {
                     json: true,
-                    impure: false,
+                    impure: true,
                 },
             )
             .await;

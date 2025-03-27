@@ -19,7 +19,7 @@ impl Default for EvalOpts {
     fn default() -> Self {
         Self {
             json: false,
-            impure: false,
+            impure: true,
         }
     }
 }
@@ -314,7 +314,7 @@ pub async fn get_main_program(
         ),
         EvalOpts {
             json: true,
-            impure: false,
+            impure: true,
         },
     )
     .await?;
@@ -363,7 +363,7 @@ pub async fn exists_in_project(
         &code,
         EvalOpts {
             json: true,
-            impure: false,
+            impure: true,
         },
     )
     .await?;

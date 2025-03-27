@@ -25,7 +25,7 @@ async fn determine_build_type(
         &code,
         nix::EvalOpts {
             json: true,
-            impure: false,
+            impure: true,
         },
     )
     .await
