@@ -5,7 +5,7 @@ use prettytable::{Attr, Cell, Row, Table, format};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::util::nix::{self, EvalOpts, EvalResult, FixedOutputStoreEntry, evaluate};
+use crate::util::nix::{self, EvalOpts, EvalResult, FixedOutputStoreEntry};
 
 use colored::Colorize;
 
@@ -95,7 +95,7 @@ async fn show_attribute(file: &str, entry: FixedOutputStoreEntry, attribute: &st
 
     let store_path_name = nix::get_store_path_name(&entry.path);
 
-    let raw_entry = evaluate(
+    let raw_entry = nix::evaluate(
         &format!(
             "
     let
@@ -161,7 +161,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
 
     match &args.name {
         Some(name) => {
-            let has_explainer = evaluate(
+            let has_explainer = nix::evaluate(
                 &format!(
                     "
     let
@@ -200,7 +200,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
 
             let store_path_name = nix::get_store_path_name(&entry.path);
 
-            let names_result = evaluate(
+            let names_result = nix::evaluate(
                 &format!(
                     "
     let
