@@ -10,22 +10,24 @@ async fn determine_build_type(
 ) -> (String, String) {
     let hash = entry.hash;
 
+    let store_path_name = nix::get_store_path_name(&entry.path);
+
+    let file_str = entry.path.to_str().unwrap();
+
     let code = format!(
         "
 	let
-    source = builtins.path {{ path = \"{}\"; sha256 = \"{hash}\"; }};
+    source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; name = \"{store_path_name}\"; }};
     project = import \"${{source}}/{file}\";
 	in
 	  project.{attribute}.name
-	",
-        entry.path.to_str().unwrap()
-    );
+	");
 
     let real_name_value = nix::evaluate(
         &code,
         nix::EvalOpts {
             json: true,
-            impure: true,
+            impure: false,
         },
     )
     .await

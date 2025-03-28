@@ -5,7 +5,7 @@ use prettytable::{Attr, Cell, Row, Table, format};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::util::nix::{EvalOpts, EvalResult, FixedOutputStoreEntry, evaluate};
+use crate::util::nix::{self, EvalOpts, EvalResult, FixedOutputStoreEntry, evaluate};
 
 use colored::Colorize;
 
@@ -93,11 +93,13 @@ async fn show_attribute(file: &str, entry: FixedOutputStoreEntry, attribute: &st
 
     let hash = entry.hash;
 
+    let store_path_name = nix::get_store_path_name(&entry.path);
+
     let raw_entry = evaluate(
         &format!(
             "
     let
-        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; name = \"{store_path_name}\"; }};
         project = import \"${{source}}/{file}\";
         attribute = \"{attribute}\";
     in
@@ -106,7 +108,7 @@ async fn show_attribute(file: &str, entry: FixedOutputStoreEntry, attribute: &st
         ),
         EvalOpts {
             json: true,
-            impure: true,
+            impure: false,
         },
     )
     .await;
@@ -155,13 +157,15 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
 
     let hash = entry.clone().hash;
 
+    let store_path_name = nix::get_store_path_name(&entry.path);
+
     match &args.name {
         Some(name) => {
             let has_explainer = evaluate(
                 &format!(
                     "
     let
-        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; name = \"{store_path_name}\"; }};
         project = import \"${{source}}/nilla.nix\";
         attribute = \"{name}\";
     in
@@ -170,7 +174,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 ),
                 EvalOpts {
                     json: true,
-                    impure: true,
+                    impure: false,
                 },
             )
             .await;
@@ -194,11 +198,13 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
             info!("Showing information about {}", cli.project);
             println!();
 
+            let store_path_name = nix::get_store_path_name(&entry.path);
+
             let names_result = evaluate(
                 &format!(
                     "
     let
-        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; name = \"{store_path_name}\"; }};
         project = import \"${{source}}/nilla.nix\";
         reserved = [ \"assertions\" \"warnings\" \"extend\" \"explain\" ];
     in
@@ -207,7 +213,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
                 ),
                 EvalOpts {
                     json: true,
-                    impure: true,
+                    impure: false,
                 },
             )
             .await;

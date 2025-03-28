@@ -36,6 +36,37 @@ pub struct FixedOutputStoreEntry {
     pub hash: String,
 }
 
+// We need a helper for getting the `name` of a store entry. Older versions of Lix/Nix
+// suported calling `builtins.path` without the `name` attribute, but newer versions may
+// require it (although it is unclear if this is a bug).
+//
+// See: https://git.lix.systems/lix-project/lix/issues/776
+pub fn get_store_path_name<P>(path: P) -> String
+where
+    P: Into<PathBuf>,
+{
+    // Store paths typically take the form of:
+    // /nix/store/lplzlyk8ldz821dl6pmlhk3md1ms69md-config
+    //
+    // However, it is possible for a path to also be of the following form:
+    // /nix/store/cb06lm41nrk3684vvsg9rplp76gh84hn-18ssxfjdmwyr3a2gb10ldg4hvhqkwnym-config
+    //
+    // To handle both of these we will want to do the following:
+    // 1. Split the path by `/` and get the entry after `store` (index 3)
+    // 2. Split the entry by `-` and get the last entry
+    // 3. Return the last entry
+
+    let path: PathBuf = path.into();
+    let path_str = path.to_str().unwrap();
+    let path_parts = path_str.split("/").collect::<Vec<&str>>();
+
+    let store_path = path_parts[3];
+    let store_parts = store_path.split("-").collect::<Vec<&str>>();
+    let store_name = store_parts.last().unwrap();
+
+    store_name.to_string()
+}
+
 pub async fn evaluate(code: &str, opts: EvalOpts) -> Result<EvalResult> {
     if <nilla_cli_def::Cli as clap::Parser>::parse().show_eval_commands {
         info!("{code}");
@@ -299,11 +330,13 @@ pub async fn get_main_program(
 
     let hash = entry.hash;
 
+    let store_path_name = get_store_path_name(&entry.path);
+
     let main = evaluate(
         &format!(
             "
 			let
-        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+        source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; name = \"{store_path_name}\"; }};
         project = import \"${{source}}/{file}\";
 				system = \"{}\";
 				name = \"{name}\";
@@ -318,7 +351,7 @@ pub async fn get_main_program(
         ),
         EvalOpts {
             json: true,
-            impure: true,
+            impure: false,
         },
     )
     .await?;
@@ -338,6 +371,8 @@ pub async fn exists_in_project(
 
     let hash = entry.hash;
 
+    let store_path_name = get_store_path_name(&entry.path);
+
     let code = if name.contains('.') {
         let parts = name.split('.').collect::<Vec<&str>>();
         let last = parts.last().ok_or(anyhow!("How did we get here"))?;
@@ -345,7 +380,7 @@ pub async fn exists_in_project(
         format!(
             "
             let
-              source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+              source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; name = \"{store_path_name}\"; }};
               project = import \"${{source}}/{file}\";
             in
               (project.{init} or {{}}) ? {last}
@@ -355,7 +390,7 @@ pub async fn exists_in_project(
         format!(
             "
 		let
-      source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; }};
+      source = builtins.path {{ path = \"{file_str}\"; sha256 = \"{hash}\"; name = \"{store_path_name}\"; }};
       project = import \"${{source}}/{file}\";
 		in
 			project ? {name}
@@ -367,7 +402,7 @@ pub async fn exists_in_project(
         &code,
         EvalOpts {
             json: true,
-            impure: true,
+            impure: false,
         },
     )
     .await?;
