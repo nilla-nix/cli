@@ -767,7 +767,7 @@ dependencies = [
 
 [[package]]
 name = "nilla"
-version = "0.0.0-alpha.7"
+version = "0.0.0-alpha.8"
 dependencies = [
  "anyhow",
  "cargo-util",
@@ -789,7 +789,7 @@ dependencies = [
 
 [[package]]
 name = "nilla-cli-def"
-version = "0.0.0-alpha.7"
+version = "0.0.0-alpha.8"
 dependencies = [
  "clap",
  "clap_complete",
