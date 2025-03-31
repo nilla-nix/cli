@@ -20,8 +20,6 @@ pub struct BuildArgs {
         default_value_t = false
     )]
     pub no_link: bool,
-    #[arg(long, action = ArgAction::SetTrue, help = "Print out links", default_value_t = false)]
-    pub print_out_paths: bool,
 }
 
 pub fn build_cmd(_cli: &crate::Cli, _args: &BuildArgs) {}

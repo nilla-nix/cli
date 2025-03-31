@@ -3,7 +3,7 @@ use clap::{
     builder::styling::{AnsiColor, Color::Ansi, Style},
 };
 use fern::colors::{Color, ColoredLevelConfig};
-use log::{LevelFilter, trace};
+use log::{LevelFilter, debug, error, trace};
 use nilla_cli_def::{Cli, Commands, commands::completions};
 use tokio;
 
@@ -65,10 +65,11 @@ async fn main() -> anyhow::Result<()> {
             Commands::Run(args) => nilla::commands::run::run_cmd(&cli, args).await,
             Commands::Build(args) => nilla::commands::build::build_cmd(&cli, args).await,
             Commands::Completions(args) => completions::completions_cmd(args, &mut Cli::command()),
-            Commands::External(items) => println!("got external subcommand: {items:?}"),
+            Commands::External(items) => debug!("got external subcommand: {items:?}"),
         },
         None => {
-            unreachable!();
+            error!("No subcommand found");
+            println!("{}", Cli::command().render_long_help().to_string());
         }
     };
     Ok(())

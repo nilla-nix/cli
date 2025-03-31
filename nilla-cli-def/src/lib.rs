@@ -16,7 +16,6 @@ use commands::{
 		("Start a development shell from a Nilla project in another directory.", "shell myshell --project ~/myproject"),
 		("Build and switch to a NixOS configuration in a local Nilla project.", "nixos switch mysystem")
 	]),
-	arg_required_else_help = true
 )]
 pub struct Cli {
     #[command(subcommand)]

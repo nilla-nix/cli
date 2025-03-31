@@ -136,6 +136,7 @@ async fn show_attribute(file: &str, entry: FixedOutputStoreEntry, attribute: &st
 }
 
 pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::show::ShowArgs) {
+    // TODO: Look into refactoring this section out, it's used in many places over the codebase and could be cleaner
     debug!("Resolving project {}", cli.project);
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
         return error!("Could not find project {}", cli.project);
@@ -158,6 +159,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
     let hash = entry.clone().hash;
 
     let store_path_name = nix::get_store_path_name(&entry.path);
+    // TODO: END
 
     match &args.name {
         Some(name) => {

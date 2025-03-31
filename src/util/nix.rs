@@ -48,9 +48,6 @@ where
     // Store paths typically take the form of:
     // /nix/store/lplzlyk8ldz821dl6pmlhk3md1ms69md-config
     //
-    // However, it is possible for a path to also be of the following form:
-    // /nix/store/cb06lm41nrk3684vvsg9rplp76gh84hn-18ssxfjdmwyr3a2gb10ldg4hvhqkwnym-config
-    //
     // To handle both of these we will want to do the following:
     // 1. Split the path by `/` and get the entry after `store` (index 3)
     // 2. Split the entry by `-` and get the last entry
@@ -59,12 +56,17 @@ where
     let path: PathBuf = path.into();
     let path_str = path.to_str().unwrap();
     let path_parts = path_str.split("/").collect::<Vec<&str>>();
+    trace!("Split path: {:?}", path_parts);
 
     let store_path = path_parts[3];
+    trace!("Store path: {store_path}");
     let store_parts = store_path.split("-").collect::<Vec<&str>>();
-    let store_name = store_parts.last().unwrap();
+    trace!("Removing {}", store_parts[0]);
+    let store_name = store_parts[1..].join("-");
 
-    store_name.to_string()
+    debug!("Got store path name {}", store_name);
+
+    store_name
 }
 
 pub async fn evaluate(code: &str, opts: EvalOpts) -> Result<EvalResult> {
@@ -84,7 +86,7 @@ pub async fn evaluate(code: &str, opts: EvalOpts) -> Result<EvalResult> {
 
     args.append(&mut vec!["--expr", &code]);
 
-    debug!("Running nix {}", args.join(" "));
+    debug!("Running nix eval:\nnix {}", args.join(" "));
     let output = Command::new("nix").args(args).output().await?;
 
     if !output.status.success() {
@@ -114,7 +116,7 @@ pub async fn get_system() -> Result<String> {
     {
         EvalResult::Json(value) => match &value {
             serde_json::Value::String(s) => {
-                debug!("Got {s}");
+                debug!("Got system {s}");
                 return Ok(value.as_str().unwrap().to_string());
             }
             _ => bail!("Got: '{value:?}', Expected String"),
@@ -143,8 +145,11 @@ where
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
+    let hash = stdout.trim().to_string();
 
-    Ok(stdout.trim().to_string())
+    debug!("Got hash {hash:?} for path {path:?}");
+
+    Ok(hash)
 }
 
 pub async fn get_file_hash<P>(path: P) -> Result<String>
@@ -165,8 +170,11 @@ where
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
+    let hash = stdout.trim().to_string();
 
-    Ok(stdout.trim().to_string())
+    debug!("Got hash {hash:?} for path {path:?}");
+
+    Ok(hash)
 }
 
 pub async fn get_store_hash<P>(path: P) -> Result<String>
@@ -278,7 +286,7 @@ where
         args.push(opts.system);
     };
     args.push(&name);
-    trace!("Running nix {}", args.join(" "));
+    debug!("Running nix build:\nnix {}", args.join(" "));
     let cmd = Command::new("nix")
         .stdout(Stdio::piped())
         .args(args)
@@ -308,6 +316,7 @@ where
     args.push("-A");
     args.push(name);
 
+    debug!("Running nix-shell:\nnix-shell {}", args.join(" "));
     debug!("Replacing process with nix-shell {name}");
     cargo_util::ProcessBuilder::new("nix-shell")
         .args(&args)
@@ -367,6 +376,7 @@ pub async fn exists_in_project(
     entry: FixedOutputStoreEntry,
     name: &str,
 ) -> Result<bool> {
+    info!("Checking project for value");
     let file_str = entry.path.to_str().unwrap();
 
     let hash = entry.hash;

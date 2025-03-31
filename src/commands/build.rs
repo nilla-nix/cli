@@ -50,7 +50,7 @@ async fn determine_build_type(
 }
 
 pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::build::BuildArgs) {
-    info!("Resolving project {}", cli.project);
+    debug!("Resolving project {}", cli.project);
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
         return error!("Could not find project {}", cli.project);
     };
@@ -112,11 +112,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     )
     .await;
 
-    let Ok(value) = out else {
-        return error!("{:?}", out.err());
+    if let Err(e) = out {
+        return error!("{:?}", e);
     };
-
-    if args.print_out_paths {
-        println!("{}", value.join("\n"))
-    }
 }

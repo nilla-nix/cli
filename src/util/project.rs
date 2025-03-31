@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail};
-use log::{debug, trace, warn};
+use log::{debug, info, trace, warn};
 use serde::Serialize;
 use std::{
     borrow::Cow,
@@ -109,7 +109,7 @@ where
 }
 
 async fn resolve_git(info: GitInfo) -> anyhow::Result<Source> {
-    trace!("Resolving for {info:?}");
+    debug!("Resolving git for {info:?}");
     let code = format!(
         "
 		let
@@ -170,7 +170,7 @@ where
     P: AsRef<Path>,
 {
     let path: &Path = path.as_ref();
-    trace!("Resolving git path for {path:?}");
+    debug!("Resolving git path for {path:?}");
 
     let untracked = git::get_untracked_files(path).await?;
 
@@ -231,6 +231,7 @@ where
 }
 
 async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
+    debug!("Resolving tarball at {url:?}");
     let code = format!(
         "
 		builtins.fetchTarball {{
@@ -274,6 +275,8 @@ async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
 }
 
 pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
+    info!("Looking for project at {uri}");
+
     trace!("Trying {uri} as local path");
     if uri.starts_with(".") || uri.starts_with("/") || uri.starts_with("~") {
         if let Ok(real_path) = {
@@ -350,7 +353,6 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
     }
 
     trace!("Trying as URL");
-
     if uri.starts_with("git:") {
         trace!("matched as git");
         let url = Url::parse(uri).unwrap();
