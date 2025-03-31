@@ -1,7 +1,7 @@
 use clap::{ArgAction, Args};
 #[derive(Debug, Args)]
 #[command(
-	about = "Start a development shell from a Nilla project",
+	about = "Build a package from a Nilla project",
 	after_help = super::make_examples(&[
 		("Build a package from a local Nilla project.", "build mypackage"),
 		("Build a package from a Nilla project on GitHub.", "build mypackage --project github:myuser/myrepo"),
