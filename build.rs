@@ -3,8 +3,11 @@ use clap::{CommandFactory, builder::styling::Style};
 const HEADER_STYLE: Style = Style::new().bold().underline();
 
 fn main() -> std::io::Result<()> {
-    let out_dir =
-        std::path::PathBuf::from(std::env::var_os("OUT_DIR").ok_or(std::io::ErrorKind::NotFound)?);
+    let out_dir = std::path::PathBuf::from(
+        std::env::var_os("OUT_DIR")
+            .ok_or(std::io::ErrorKind::NotFound)
+            .unwrap(),
+    );
 
     let cmd = nilla_cli_def::Cli::command().after_long_help(format!(
         "
@@ -60,11 +63,25 @@ fn main() -> std::io::Result<()> {
 "
     ));
 
-    let man = clap_mangen::Man::new(cmd);
+    let man = clap_mangen::Man::new(cmd.clone());
+
+    let mans = cmd
+        .get_subcommands()
+        .map(|sc| clap_mangen::Man::new(sc.clone()));
+
     let mut buffer: Vec<u8> = Default::default();
     man.render(&mut buffer)?;
 
-    std::fs::write(out_dir.join("nilla.1"), buffer)?;
+    std::fs::write(out_dir.join(man.get_filename()), buffer)?;
+
+    for man in mans {
+        let mut buffer: Vec<u8> = Default::default();
+        man.render(&mut buffer)?;
+        std::fs::write(
+            out_dir.join(format!("nilla-{}", man.get_filename())),
+            buffer,
+        )?;
+    }
 
     Ok(())
 }

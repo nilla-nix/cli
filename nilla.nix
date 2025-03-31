@@ -25,7 +25,7 @@ nilla.create ({ config }: {
     packages.nilla-cli = {
       systems = [ "x86_64-linux" "aarch64-linux" ];
 
-      package = { fenix, makeRustPlatform, lib, ... }:
+      package = { fenix, makeRustPlatform, lib, installShellFiles, ... }:
         let
           toolchain = fenix.complete.toolchain;
 
@@ -42,6 +42,12 @@ nilla.create ({ config }: {
           version = manifest.version;
 
           src = ./.;
+
+          nativeBuildInputs = [ installShellFiles ];
+
+          postInstall = ''
+            installManPage ./target/release-tmp/build/nilla-*/out/nilla*
+          '';
 
           cargoLock.lockFile = ./Cargo.lock;
         };
