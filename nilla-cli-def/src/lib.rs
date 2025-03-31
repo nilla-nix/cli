@@ -14,7 +14,6 @@ use commands::{
 		("Run a package from a local Nilla project.", "run mypackage"),
 		("Build a package from a Nilla project on GitHub.", "build mypackage --project github:myuser/myrepo"),
 		("Start a development shell from a Nilla project in another directory.", "shell myshell --project ~/myproject"),
-		("Build and switch to a NixOS configuration in a local Nilla project.", "nixos switch mysystem")
 	]),
 )]
 pub struct Cli {
