@@ -22,9 +22,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "ebdaf737ab4f4168dcb208caa88a18dfc4a62fbc",
-      "url": "https://github.com/nilla-nix/nilla/archive/ebdaf737ab4f4168dcb208caa88a18dfc4a62fbc.tar.gz",
-      "hash": "1ph1pqlgsv8417hc4kl51sglag9299j2qc75i1bxqa23hr2gcymr"
+      "revision": "b0d6064bacffb46ff361fdd00e9321cac9d82c62",
+      "url": "https://github.com/nilla-nix/nilla/archive/b0d6064bacffb46ff361fdd00e9321cac9d82c62.tar.gz",
+      "hash": "0mwhxa2wp0smzhkjibcfbd3w9lidr9vhb0irgkvr7fqyqj9xfg6n"
     },
     "nixpkgs": {
       "type": "Git",
