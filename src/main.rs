@@ -65,7 +65,22 @@ async fn main() -> anyhow::Result<()> {
             Commands::Run(args) => nilla::commands::run::run_cmd(&cli, args).await,
             Commands::Build(args) => nilla::commands::build::build_cmd(&cli, args).await,
             Commands::Completions(args) => completions::completions_cmd(args, &mut Cli::command()),
-            Commands::External(items) => debug!("got external subcommand: {items:?}"),
+            Commands::External(items) => {
+                debug!("got external subcommand: {items:?}");
+                let name = format!("nilla-{}", items[0]);
+
+                match which::which(&name) {
+                    Ok(path) => {
+                        debug!("found external subcommand: {path:?}");
+                        std::process::Command::new(path)
+                            .args(&items[1..])
+                            .status()?;
+                    }
+                    Err(_) => {
+                        error!("External subcommand not found: {name}");
+                    }
+                };
+            }
         },
         None => {
             error!("No subcommand found");
