@@ -302,6 +302,7 @@ where
 
 pub struct ShellOpts<'a> {
     pub system: &'a str,
+    pub command: &'a str,
 }
 
 pub fn shell<P>(file: P, name: &str, opts: ShellOpts<'_>)
@@ -312,6 +313,10 @@ where
     if opts.system != "" {
         args.push("--system");
         args.push(opts.system);
+    }
+    if opts.command != "" {
+        args.push("--command");
+        args.push(opts.command);
     }
     args.push("-A");
     args.push(name);
