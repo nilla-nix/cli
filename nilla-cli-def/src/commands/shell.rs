@@ -16,4 +16,10 @@ pub struct ShellArgs {
     pub name: String,
     #[arg(help = "System architecture (eg: x86_64-linux)")]
     pub system: Option<String>,
+    #[arg(
+        long,
+        short,
+        help = "Command and arguments to be executed, defaults to $SHELL",
+    )]
+    pub command: Option<String>,
 }

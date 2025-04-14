@@ -28,6 +28,14 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
         },
     };
 
+    let command = match &args.command {
+        Some(c) => c,
+        _ => &match std::env::var("SHELL") {
+            Ok(s) => s,
+            _ => "".to_string(),
+        },
+    };
+
     let attribute = format!("shells.\"{}\".result.\"{system}\"", args.name);
 
     match nix::exists_in_project("nilla.nix", entry.clone(), &attribute).await {
@@ -39,5 +47,5 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     }
 
     info!("Entering shell {}", args.name);
-    nix::shell(&path, &attribute, ShellOpts { system: &system });
+    nix::shell(&path, &attribute, ShellOpts { system: &system, command: &command });
 }
