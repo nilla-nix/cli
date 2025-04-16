@@ -143,7 +143,8 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
     };
 
     let entry = project.clone().get_entry();
-    let mut path = project.get_path();
+    let subpath = project.clone().get_subpath();
+    let mut path = project.get_path().join(subpath.clone());
 
     debug!("Resolved project {path:?}");
 
