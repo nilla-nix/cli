@@ -10,7 +10,7 @@ You can add the Nilla CLI to your Nilla project and access using the following c
 # In any module of your project.
 { config }:
 let
-    nilla-cli-package = config.inputs.nilla-cli.packages.nilla.x86_64-linux;
+    nilla-cli-package = config.inputs.nilla-cli.packages.nilla-cli.x86_64-linux;
 in
 {
     config = {
@@ -36,7 +36,7 @@ let
     url = "https://github.com/nilla-nix/cli/archive/main.tar.gz";
     sha256 = "0000000000000000000000000000000000000000000000000000";
   });
-  nilla-cli-package = nilla-cli.packages.nilla.result.${pkgs.system};
+  nilla-cli-package = nilla-cli.packages.nilla-cli.result.${pkgs.system};
 in
 {
   environment.systemPackages = [
