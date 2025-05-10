@@ -13,11 +13,13 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
     };
 
     let entry = project.clone().get_entry();
-    let mut path = project.get_path();
+    let mut subpath = project.clone().get_subpath();
+    let mut path = project.clone().get_path().join(subpath.clone());
 
     debug!("Resolved project {path:?}");
 
     path.push("nilla.nix");
+    subpath.push("nilla.nix");
 
     match path.try_exists() {
         Ok(false) | Err(_) => return error!("File not found"),
@@ -47,7 +49,13 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
         None => (&format!("packages.default.result.\"{system}\""), "default"),
     };
 
-    match nix::exists_in_project("nilla.nix", entry.clone(), &attribute).await {
+    match nix::exists_in_project(
+        subpath.to_str().unwrap_or("nilla.nix"),
+        entry.clone(),
+        &attribute,
+    )
+    .await
+    {
         Ok(false) => {
             return error!("Attribute {attribute} does not exist in project {path:?}");
         }
