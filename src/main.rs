@@ -1,3 +1,4 @@
+use anyhow::bail;
 use clap::{
     CommandFactory, Parser,
     builder::styling::{AnsiColor, Color::Ansi, Style},
@@ -56,14 +57,23 @@ async fn main() -> anyhow::Result<()> {
         )
         .apply()?;
 
+    if let Err(e) = run_cli(cli).await {
+        error!("{e}");
+        std::process::exit(1);
+    }
+
+    Ok(())
+}
+
+async fn run_cli(cli: Cli) -> anyhow::Result<()> {
     trace!("Running {:?}", cli.command);
 
     match &cli.command {
         Some(command) => match command {
-            Commands::Show(args) => nilla::commands::show::show_cmd(&cli, args).await,
-            Commands::Shell(args) => nilla::commands::shell::shell_cmd(&cli, args).await,
-            Commands::Run(args) => nilla::commands::run::run_cmd(&cli, args).await,
-            Commands::Build(args) => nilla::commands::build::build_cmd(&cli, args).await,
+            Commands::Show(args) => nilla::commands::show::show_cmd(&cli, args).await?,
+            Commands::Shell(args) => nilla::commands::shell::shell_cmd(&cli, args).await?,
+            Commands::Run(args) => nilla::commands::run::run_cmd(&cli, args).await?,
+            Commands::Build(args) => nilla::commands::build::build_cmd(&cli, args).await?,
             Commands::Completions(args) => completions::completions_cmd(args, &mut Cli::command()),
             Commands::External(items) => {
                 debug!("got external subcommand: {items:?}");
@@ -77,15 +87,16 @@ async fn main() -> anyhow::Result<()> {
                             .status()?;
                     }
                     Err(_) => {
-                        error!("External subcommand not found: {name}");
+                        bail!("External subcommand not found: {name}");
                     }
                 };
             }
         },
         None => {
-            error!("No subcommand found");
             println!("{}", Cli::command().render_long_help().to_string());
+            bail!("No subcommand found");
         }
     };
+
     Ok(())
 }
