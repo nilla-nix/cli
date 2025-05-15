@@ -8,8 +8,8 @@
     {
       packages = {
         x86_64-linux = rec {
-          nilla = project.packages.nilla-cli.result.x86_64-linux;
-          default = nilla;
+          nilla-cli = project.packages.nilla-cli.result.x86_64-linux;
+          default = nilla-cli;
         };
       };
     };
