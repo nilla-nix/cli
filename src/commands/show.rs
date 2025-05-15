@@ -1,13 +1,13 @@
 use std::cmp::Ordering;
 
+use anyhow::bail;
+use colored::Colorize;
 use log::{debug, error, info, trace};
 use prettytable::{Attr, Cell, Row, Table, format};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::util::nix::{self, EvalOpts, EvalResult, FixedOutputStoreEntry};
-
-use colored::Colorize;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ExplainEntryData {
@@ -135,11 +135,14 @@ async fn show_attribute(file: &str, entry: FixedOutputStoreEntry, attribute: &st
     };
 }
 
-pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::show::ShowArgs) {
+pub async fn show_cmd(
+    cli: &nilla_cli_def::Cli,
+    args: &nilla_cli_def::commands::show::ShowArgs,
+) -> anyhow::Result<()> {
     // TODO: Look into refactoring this section out, it's used in many places over the codebase and could be cleaner
     debug!("Resolving project {}", cli.project);
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
-        return error!("Could not find project {}", cli.project);
+        bail!("Could not find project {}", cli.project);
     };
 
     let entry = project.clone().get_entry();
@@ -151,7 +154,7 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
     path.push("nilla.nix");
 
     match path.try_exists() {
-        Ok(false) | Err(_) => return error!("File not found"),
+        Ok(false) | Err(_) => bail!("File not found"),
         _ => {}
     }
 
@@ -222,11 +225,11 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
             .await;
 
             let Ok(EvalResult::Json(names)) = names_result else {
-                return error!("Failed to get Nilla project attributes");
+                bail!("Failed to get Nilla project attributes");
             };
 
             let Some(names_vec) = names.as_array() else {
-                return error!("Failed to get Nilla project attributes");
+                bail!("Failed to get Nilla project attributes");
             };
 
             let str_names = names_vec
@@ -242,4 +245,6 @@ pub async fn show_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::
             }
         }
     };
+
+    Ok(())
 }

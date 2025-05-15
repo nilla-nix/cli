@@ -177,7 +177,7 @@ async fn resolve_git(info: GitInfo) -> anyhow::Result<Source> {
         bail!("{}", store_path.unwrap_err());
     };
 
-    let mut final_path = paths[0].clone();
+    let final_path = paths[0].clone();
 
     return Ok(Source::Git {
         info,
