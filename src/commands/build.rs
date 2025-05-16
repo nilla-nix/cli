@@ -88,7 +88,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     match nix::exists_in_project(
         subpath.to_str().unwrap_or("nilla.nix"),
         entry.clone(),
-        &attribute,
+        attribute,
     )
     .await
     {
@@ -106,14 +106,14 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     )
     .await;
     info!("Building {} {}", build_type.0, build_type.1);
-    let out = nix::build(&path, &attribute, nix::BuildOpts {
+    let out = nix::build(&path, attribute, nix::BuildOpts {
         link: !args.no_link,
         report: true,
-        system: &system,
+        system,
     })
     .await;
 
     if let Err(e) = out {
-        return error!("{:?}", e);
-    };
+        error!("{:?}", e);
+    }
 }
