@@ -6,11 +6,11 @@
       project = import ./nilla.nix;
     in
     {
-      packages = {
-        x86_64-linux = rec {
-          nilla-cli = project.packages.nilla-cli.result.x86_64-linux;
-          default = nilla-cli;
-        };
-      };
+      packages = builtins.mapAttrs
+        (system: package: {
+          default = package;
+          nilla-cli = package;
+        })
+        project.packages.nilla-cli.result;
     };
 }
