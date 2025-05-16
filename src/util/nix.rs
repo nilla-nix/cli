@@ -327,7 +327,6 @@ where
         .args(&args)
         .exec_replace()
         .unwrap();
-    std::process::exit(0);
 }
 
 pub struct GetMainProgramOpts<'a> {
