@@ -52,7 +52,7 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
     match nix::exists_in_project(
         subpath.to_str().unwrap_or("nilla.nix"),
         entry.clone(),
-        &attribute,
+        attribute,
     )
     .await
     {
@@ -65,11 +65,11 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
     info!("Building package {name}");
     let out = nix::build(
         &path,
-        &attribute,
+        attribute,
         nix::BuildOpts {
             link: false,
             report: true,
-            system: &system,
+            system,
         },
     )
     .await;
@@ -78,15 +78,15 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
         return error!("{:?}", out.unwrap_err());
     };
 
-    if value.len() == 0 {
+    if value.is_empty() {
         return error!("Package has no outputs");
     }
 
     let main_prog = nix::get_main_program(
-        path.iter().last().take().unwrap().to_str().unwrap(),
+        path.iter().next_back().unwrap().to_str().unwrap(),
         entry.clone(),
-        &name,
-        nix::GetMainProgramOpts { system: &system },
+        name,
+        nix::GetMainProgramOpts { system },
     )
     .await;
 

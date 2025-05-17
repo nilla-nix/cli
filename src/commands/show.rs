@@ -1,13 +1,12 @@
 use std::cmp::Ordering;
 
+use colored::Colorize;
 use log::{debug, error, info, trace};
 use prettytable::{Attr, Cell, Row, Table, format};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::util::nix::{self, EvalOpts, EvalResult, FixedOutputStoreEntry};
-
-use colored::Colorize;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct ExplainEntryData {

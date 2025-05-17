@@ -5,7 +5,6 @@ use clap::{
 use fern::colors::{Color, ColoredLevelConfig};
 use log::{LevelFilter, debug, error, trace};
 use nilla_cli_def::{Cli, Commands, commands::completions};
-use tokio;
 
 const B: Style = Style::new().bold();
 const D: Style = Style::new().dimmed();
@@ -84,7 +83,7 @@ async fn main() -> anyhow::Result<()> {
         },
         None => {
             error!("No subcommand found");
-            println!("{}", Cli::command().render_long_help().to_string());
+            println!("{}", Cli::command().render_long_help());
         }
     };
     Ok(())

@@ -55,12 +55,5 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     }
 
     info!("Entering shell {}", args.name);
-    nix::shell(
-        &path,
-        &attribute,
-        ShellOpts {
-            system: &system,
-            command: &command,
-        },
-    );
+    nix::shell(&path, &attribute, ShellOpts { system, command });
 }
