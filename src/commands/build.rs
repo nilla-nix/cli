@@ -104,7 +104,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
 
     let build_type = determine_build_type(
         attribute,
-        path.iter().last().unwrap().to_str().unwrap(),
+        subpath.to_str().unwrap_or("nilla.nix"),
         entry.clone(),
     )
     .await;
