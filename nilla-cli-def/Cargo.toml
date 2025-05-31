@@ -1,6 +1,6 @@
 [package]
 name = "nilla-cli-def"
-version = "0.0.0-alpha.8"
+version = "0.0.0-alpha.9"
 edition = "2024"
 repository = "https://github.com/nilla-nix/cli"
 
