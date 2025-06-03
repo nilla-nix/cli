@@ -1,4 +1,5 @@
-use log::{debug, error, info};
+use anyhow::bail;
+use log::{debug, info};
 use serde_json::Value;
 
 use crate::util::nix::{self, FixedOutputStoreEntry};
@@ -49,10 +50,13 @@ async fn determine_build_type(
     }
 }
 
-pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::build::BuildArgs) {
+pub async fn build_cmd(
+    cli: &nilla_cli_def::Cli,
+    args: &nilla_cli_def::commands::build::BuildArgs,
+) -> anyhow::Result<()> {
     debug!("Resolving project {}", cli.project);
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
-        return error!("Could not find project {}", cli.project);
+        bail!("Could not find project {}", cli.project);
     };
 
     let entry = project.clone().get_entry();
@@ -65,7 +69,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     subpath.push("nilla.nix");
 
     match path.try_exists() {
-        Ok(false) | Err(_) => return error!("File not found"),
+        Ok(false) | Err(_) => bail!("File not found"),
         _ => {}
     }
 
@@ -73,7 +77,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
         Some(s) => s,
         _ => &match nix::get_system().await {
             Ok(s) => s,
-            Err(e) => return error!("{e:?}"),
+            Err(e) => bail!("{e:?}"),
         },
     };
 
@@ -96,9 +100,9 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     .await
     {
         Ok(false) => {
-            return error!("Attribute {attribute} does not exist in project {path:?}");
+            bail!("Attribute {attribute} does not exist in project {path:?}");
         }
-        Err(e) => return error!("{e:?}"),
+        Err(e) => bail!("{e:?}"),
         _ => {}
     }
 
@@ -109,7 +113,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     )
     .await;
     info!("Building {} {}", build_type.0, build_type.1);
-    let out = nix::build(
+    nix::build(
         &path,
         &attribute,
         nix::BuildOpts {
@@ -118,9 +122,7 @@ pub async fn build_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
             system: &system,
         },
     )
-    .await;
+    .await?;
 
-    if let Err(e) = out {
-        return error!("{:?}", e);
-    };
+    Ok(())
 }

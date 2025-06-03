@@ -1,11 +1,15 @@
-use log::{debug, error, info};
+use anyhow::bail;
+use log::{debug, info};
 
 use crate::util::nix::{self, ShellOpts};
 
-pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::shell::ShellArgs) {
+pub async fn shell_cmd(
+    cli: &nilla_cli_def::Cli,
+    args: &nilla_cli_def::commands::shell::ShellArgs,
+) -> anyhow::Result<()> {
     debug!("Resolving project {}", cli.project);
     let Ok(project) = crate::util::project::resolve(&cli.project).await else {
-        return error!("Could not find project {}", cli.project);
+        bail!("Could not find project {}", cli.project);
     };
 
     let entry = project.clone().get_entry();
@@ -18,7 +22,7 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     subpath.push("nilla.nix");
 
     match path.try_exists() {
-        Ok(false) | Err(_) => return error!("File not found"),
+        Ok(false) | Err(_) => bail!("File not found"),
         _ => {}
     }
 
@@ -26,7 +30,7 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
         Some(s) => s,
         _ => &match nix::get_system().await {
             Ok(s) => s,
-            Err(e) => return error!("{e:?}"),
+            Err(e) => bail!("{e:?}"),
         },
     };
 
@@ -48,9 +52,9 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
     .await
     {
         Ok(false) => {
-            return error!("Shell {attribute} does not exist in project {path:?}");
+            bail!("Shell {attribute} does not exist in project {path:?}");
         }
-        Err(e) => return error!("{e:?}"),
+        Err(e) => bail!("{e:?}"),
         _ => {}
     }
 
@@ -63,4 +67,6 @@ pub async fn shell_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands:
             command: &command,
         },
     );
+
+    Ok(())
 }
