@@ -95,7 +95,7 @@ pub async fn build_cmd(
     match nix::exists_in_project(
         subpath.to_str().unwrap_or("nilla.nix"),
         entry.clone(),
-        &attribute,
+        attribute,
     )
     .await
     {
@@ -115,11 +115,11 @@ pub async fn build_cmd(
     info!("Building {} {}", build_type.0, build_type.1);
     nix::build(
         &path,
-        &attribute,
+        attribute,
         nix::BuildOpts {
             link: !args.no_link,
             report: true,
-            system: &system,
+            system,
         },
     )
     .await?;

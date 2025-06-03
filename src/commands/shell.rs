@@ -59,14 +59,7 @@ pub async fn shell_cmd(
     }
 
     info!("Entering shell {}", args.name);
-    nix::shell(
-        &path,
-        &attribute,
-        ShellOpts {
-            system: &system,
-            command: &command,
-        },
-    );
+    nix::shell(&path, &attribute, ShellOpts { system, command });
 
     Ok(())
 }
