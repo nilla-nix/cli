@@ -63,15 +63,11 @@ pub async fn run_cmd(cli: &nilla_cli_def::Cli, args: &nilla_cli_def::commands::r
         _ => {}
     }
     info!("Building package {name}");
-    let out = nix::build(
-        &path,
-        &attribute,
-        nix::BuildOpts {
-            link: false,
-            report: true,
-            system: &system,
-        },
-    )
+    let out = nix::build(&path, &attribute, nix::BuildOpts {
+        link: false,
+        report: true,
+        system: &system,
+    })
     .await;
 
     let Ok(value) = out else {

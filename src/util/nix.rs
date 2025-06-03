@@ -105,13 +105,10 @@ pub async fn evaluate(code: &str, opts: EvalOpts) -> Result<EvalResult> {
 
 pub async fn get_system() -> Result<String> {
     trace!("Getting system platform");
-    match evaluate(
-        "builtins.currentSystem",
-        EvalOpts {
-            json: true,
-            impure: true,
-        },
-    )
+    match evaluate("builtins.currentSystem", EvalOpts {
+        json: true,
+        impure: true,
+    })
     .await?
     {
         EvalResult::Json(value) => match &value {
@@ -413,13 +410,10 @@ pub async fn exists_in_project(
         )
     };
 
-    let result = evaluate(
-        &code,
-        EvalOpts {
-            json: true,
-            impure: false,
-        },
-    )
+    let result = evaluate(&code, EvalOpts {
+        json: true,
+        impure: false,
+    })
     .await?;
 
     match result {

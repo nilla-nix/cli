@@ -152,13 +152,10 @@ async fn resolve_git(info: GitInfo) -> anyhow::Result<Source> {
         serde_json::to_string(&info).unwrap()
     );
 
-    let root = nix::evaluate(
-        &code,
-        nix::EvalOpts {
-            impure: true,
-            json: true,
-        },
-    )
+    let root = nix::evaluate(&code, nix::EvalOpts {
+        impure: true,
+        json: true,
+    })
     .await;
 
     let root_path = match root {
@@ -219,13 +216,10 @@ where
         path.to_str().unwrap()
     );
 
-    let root = nix::evaluate(
-        &code,
-        nix::EvalOpts {
-            impure: true,
-            json: true,
-        },
-    )
+    let root = nix::evaluate(&code, nix::EvalOpts {
+        impure: true,
+        json: true,
+    })
     .await;
 
     let root_path = match root {
@@ -270,13 +264,10 @@ async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
 	"
     );
 
-    let root = nix::evaluate(
-        &code.trim(),
-        nix::EvalOpts {
-            impure: true,
-            json: true,
-        },
-    )
+    let root = nix::evaluate(&code.trim(), nix::EvalOpts {
+        impure: true,
+        json: true,
+    })
     .await;
 
     let root_path = match root {
