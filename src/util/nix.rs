@@ -117,12 +117,12 @@ pub async fn get_system() -> Result<String> {
         EvalResult::Json(value) => match &value {
             serde_json::Value::String(s) => {
                 debug!("Got system {s}");
-                return Ok(value.as_str().unwrap().to_string());
+                Ok(value.as_str().unwrap().to_string())
             }
             _ => bail!("Got: '{value:?}', Expected String"),
         },
         EvalResult::Raw(v) => bail!("Somehow returned raw with value: '{v}'"),
-    };
+    }
 }
 
 pub async fn get_path_hash<P>(path: P) -> Result<String>
@@ -256,10 +256,7 @@ where
 
     let stdout = String::from_utf8_lossy(&output.stdout);
 
-    Ok(stdout
-        .lines()
-        .map(|i| PathBuf::from(i))
-        .collect::<Vec<PathBuf>>())
+    Ok(stdout.lines().map(PathBuf::from).collect::<Vec<PathBuf>>())
 }
 
 pub struct BuildOpts<'a> {
@@ -281,23 +278,23 @@ where
     }
     args.push("-f");
     args.push(file.as_ref().to_str().unwrap());
-    if opts.system != "" {
+    if !opts.system.is_empty() {
         args.push("--system");
         args.push(opts.system);
     };
-    args.push(&name);
+    args.push(name);
     debug!("Running nix build:\nnix {}", args.join(" "));
     let cmd = Command::new("nix")
         .stdout(Stdio::piped())
         .args(args)
         .spawn()?;
 
-    return Ok(
+    Ok(
         String::from_utf8_lossy(&cmd.wait_with_output().await.unwrap().stdout)
             .lines()
             .map(|s| s.to_owned())
             .collect(),
-    );
+    )
 }
 
 pub struct ShellOpts<'a> {
@@ -310,11 +307,11 @@ where
     P: AsRef<Path>,
 {
     let mut args = vec![file.as_ref().to_str().unwrap()];
-    if opts.system != "" {
+    if !opts.system.is_empty() {
         args.push("--system");
         args.push(opts.system);
     }
-    if opts.command != "" {
+    if !opts.command.is_empty() {
         args.push("--command");
         args.push(opts.command);
     }
@@ -356,7 +353,7 @@ pub async fn get_main_program(
 			in
 				project.packages.${{name}}.result.${{system}}.meta.mainProgram or name
 			",
-            if opts.system == "" {
+            if opts.system.is_empty() {
                 get_system().await?
             } else {
                 opts.system.to_string()

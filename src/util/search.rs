@@ -1,5 +1,6 @@
-use log::trace;
 use std::path::PathBuf;
+
+use log::trace;
 
 pub fn search_up_for_file<P>(start: P, file: &str) -> Option<PathBuf>
 where

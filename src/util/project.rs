@@ -1,20 +1,20 @@
-use anyhow::{anyhow, bail};
-use log::{debug, info, trace, warn};
-use serde::Serialize;
 use std::{
     borrow::Cow,
     path::{Path, PathBuf},
     str::FromStr,
 };
+
+use anyhow::{anyhow, bail};
+use log::{debug, info, trace, warn};
+use serde::Serialize;
 use url::Url;
 
+use super::nix::FixedOutputStoreEntry;
 use crate::util::{
     git,
     nix::{self, EvalResult},
     search::{search_up_for_dir, search_up_for_file},
 };
-
-use super::nix::FixedOutputStoreEntry;
 
 #[derive(Debug, Clone)]
 pub enum Source {
@@ -251,13 +251,13 @@ where
         Err(_) => None,
     };
 
-    return Ok(Source::Path {
+    Ok(Source::Path {
         info: PathInfo { dir },
         entry: FixedOutputStoreEntry {
             path: final_path.clone(),
             hash: nix::get_store_hash(final_path).await?,
         },
-    });
+    })
 }
 
 async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
@@ -271,7 +271,7 @@ async fn resolve_tar(url: &str) -> anyhow::Result<Source> {
     );
 
     let root = nix::evaluate(
-        &code.trim(),
+        code.trim(),
         nix::EvalOpts {
             impure: true,
             json: true,
@@ -417,13 +417,12 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
                 .find(|(k, _)| k == "submodules")
                 .unwrap_or(("".into(), "false".into()))
                 .1
-                .to_string()
                 == "true",
         };
-        return resolve_git(info).await;
-    } else if uri.starts_with("github:") {
+        Ok(resolve_git(info).await?)
+    } else if let Some(minus_github) = uri.strip_prefix("github:") {
         trace!("matched as github");
-        let url = Url::parse(&format!("github://{}", &uri[7..])).unwrap();
+        let url = Url::parse(&format!("github://{}", minus_github)).unwrap();
         let mut parsed = url
             .path_segments()
             .ok_or_else(|| anyhow!("cannot be base"))?;
@@ -453,8 +452,7 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
             host: qps
                 .clone()
                 .find(|(k, _)| k == "host")
-                .or(Some((Cow::from(""), Cow::from("github.com"))))
-                .unwrap()
+                .unwrap_or((Cow::from(""), Cow::from("github.com")))
                 .1
                 .to_string(),
             submodules: qps
@@ -462,13 +460,12 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
                 .find(|(k, _)| k == "submodules")
                 .unwrap_or(("".into(), "false".into()))
                 .1
-                .to_string()
                 == "true",
         };
-        return resolve_git(info.into()).await;
-    } else if uri.starts_with("gitlab:") {
+        Ok(resolve_git(info.into()).await?)
+    } else if let Some(minus_gitlab) = uri.strip_prefix("gitlab:") {
         trace!("matched as gitlab");
-        let url = Url::parse(&format!("gitlab://{}", &uri[7..])).unwrap();
+        let url = Url::parse(&format!("gitlab://{}", minus_gitlab)).unwrap();
         let mut parsed = url
             .path_segments()
             .ok_or_else(|| anyhow!("cannot be base"))?;
@@ -498,8 +495,7 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
             host: qps
                 .clone()
                 .find(|(k, _)| k == "host")
-                .or(Some((Cow::from(""), Cow::from("gitlab.com"))))
-                .unwrap()
+                .unwrap_or((Cow::from(""), Cow::from("gitlab.com")))
                 .1
                 .to_string(),
             submodules: qps
@@ -507,21 +503,20 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
                 .find(|(k, _)| k == "submodules")
                 .unwrap_or(("".into(), "false".into()))
                 .1
-                .to_string()
                 == "true",
         };
 
-        return resolve_git(info.into()).await;
-    } else if uri.starts_with("tarball:") {
+        Ok(resolve_git(info.into()).await?)
+    } else if let Some(minus_tar) = uri.strip_prefix("tarball:") {
         trace!("matched as tarball");
-        let mut minus_tar = uri[8..].to_string();
+        let mut minus_tar = minus_tar.to_string();
         if !minus_tar.starts_with("http://") && !minus_tar.starts_with("https://") {
             minus_tar = format!("http://{minus_tar}");
         }
-        return resolve_tar(&minus_tar).await;
+        Ok(resolve_tar(&minus_tar).await?)
     } else if uri.starts_with("http://") || uri.starts_with("https://") {
         trace!("matched as http(s)");
-        return resolve_tar(uri).await;
+        Ok(resolve_tar(uri).await?)
     } else {
         bail!("Could not parse URL Scheme for {uri}")
     }
