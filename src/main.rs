@@ -6,6 +6,7 @@ use clap::{
 use fern::colors::{Color, ColoredLevelConfig};
 use log::{LevelFilter, debug, error, trace};
 use nilla_cli_def::{Cli, Commands, commands::completions};
+use serde::de::value::UsizeDeserializer;
 
 const B: Style = Style::new().bold();
 const D: Style = Style::new().dimmed();
@@ -55,16 +56,17 @@ async fn main() -> anyhow::Result<()> {
                 .chain(std::io::stderr()),
         )
         .apply()?;
-
-    if let Err(e) = run_cli(cli).await {
-        error!("{e}");
-        std::process::exit(1);
+    let result = run_cli(cli).await;
+    match result {
+        Ok(c) => std::process::exit(c.unwrap_or(0)),
+        Err(e) => {
+            error!("{e}");
+            std::process::exit(1);
+        }
     }
-
-    Ok(())
 }
 
-async fn run_cli(cli: Cli) -> anyhow::Result<()> {
+async fn run_cli(cli: Cli) -> anyhow::Result<Option<i32>> {
     trace!("Running {:?}", cli.command);
 
     match &cli.command {
@@ -81,9 +83,10 @@ async fn run_cli(cli: Cli) -> anyhow::Result<()> {
                 match which::which(&name) {
                     Ok(path) => {
                         debug!("found external subcommand: {path:?}");
-                        std::process::Command::new(path)
+                        let exit_code = std::process::Command::new(path)
                             .args(&items[1..])
                             .status()?;
+                        return Ok(exit_code.code());
                     }
                     Err(_) => {
                         bail!("External subcommand not found: {name}");
@@ -97,5 +100,5 @@ async fn run_cli(cli: Cli) -> anyhow::Result<()> {
         }
     };
 
-    Ok(())
+    Ok(Some(0))
 }
