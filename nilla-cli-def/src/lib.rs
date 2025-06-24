@@ -52,6 +52,11 @@ pub struct Cli {
 		default_value_t = false,
     )]
     pub show_eval_commands: bool,
+    #[arg(
+        trailing_var_arg = true,
+        allow_hyphen_values = true
+    )]
+    pub trailing_args: Vec<string>,
 }
 
 #[derive(Subcommand, Debug)]
