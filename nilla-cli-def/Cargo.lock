@@ -205,7 +205,7 @@ checksum = "fe7db12097d22ec582439daf8618b8fdd1a7bef6270e9af3b1ebcd30893cf413"
 
 [[package]]
 name = "nilla-cli-def"
-version = "0.0.0-alpha.8"
+version = "0.0.0-alpha.10"
 dependencies = [
  "clap",
  "clap_complete",

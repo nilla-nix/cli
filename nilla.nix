@@ -23,7 +23,7 @@ nilla.create ({ config }: {
 
     packages.default = config.packages.nilla-cli;
     packages.nilla-cli = {
-      systems = [ "x86_64-linux" "aarch64-linux" ];
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
 
       package = { fenix, makeRustPlatform, lib, installShellFiles, ... }:
         let
@@ -55,7 +55,7 @@ nilla.create ({ config }: {
 
     shells.default = config.shells.nilla-cli;
     shells.nilla-cli = {
-      systems = [ "x86_64-linux" "aarch64-linux" ];
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
 
       shell = { mkShell, fenix, bacon, pkg-config, ... }:
         mkShell {
