@@ -21,6 +21,7 @@ fern = { version = "0.7.1", features = ["colored"] }
 colored = "3.0.0"
 prettytable-rs = "0.10.0"
 which = "7.0.2"
+rand = "0.9.2"
 
 [build-dependencies]
 nilla-cli-def = { version = "0.0.0-alpha.10", path = "./nilla-cli-def" }
