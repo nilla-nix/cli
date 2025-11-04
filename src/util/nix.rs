@@ -1,10 +1,11 @@
 use std::{
+    fs::create_dir_all,
     path::{Path, PathBuf},
     process::Stdio,
 };
 
 use anyhow::{Result, anyhow, bail};
-use log::{debug, info, trace};
+use log::{debug, error, info, trace};
 use serde_json::Value;
 use tokio::process::Command;
 
@@ -318,12 +319,22 @@ where
     args.push("-A");
     args.push(name);
 
-    debug!("Running nix-shell:\nnix-shell {}", args.join(" "));
-    debug!("Replacing process with nix-shell {name}");
-    cargo_util::ProcessBuilder::new("nix-shell")
-        .args(&args)
-        .exec_replace()
-        .unwrap();
+    let tmpdir_name = format!("/tmp/nix-shell-{}", rand::random::<u16>());
+    match create_dir_all(&tmpdir_name) {
+        Ok(_) => {
+            debug!("Running nix-shell:\nnix-shell {}", args.join(" "));
+            debug!("Replacing process with nix-shell {name}");
+            cargo_util::ProcessBuilder::new("nix-shell")
+                .args(&args)
+                .env("TMPDIR", tmpdir_name)
+                .exec_replace()
+                .unwrap();
+        }
+        Err(e) => {
+            error!("Failed to create temporary directory: {}", e);
+            std::process::exit(1);
+        }
+    }
 }
 
 pub struct GetMainProgramOpts<'a> {
