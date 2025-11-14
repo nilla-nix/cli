@@ -97,12 +97,17 @@ pub struct GitXInfo {
     pub dir: Option<String>,
     pub host: String,
     pub submodules: bool,
+    pub method: String,
 }
 
 impl From<GitXInfo> for GitInfo {
     fn from(value: GitXInfo) -> Self {
         GitInfo {
-            url: format!("git@{}:{}/{}.git", value.host, value.owner, value.repo),
+            url: if value.method == "ssh" {
+                format!("git@{}:{}/{}.git", value.host, value.owner, value.repo)
+            } else {
+                format!("https://{}/{}/{}.git", value.host, value.owner, value.repo)
+            },
             rev: value.rev,
             r#ref: value.r#ref,
             dir: value.dir,
@@ -461,6 +466,12 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
                 .unwrap_or(("".into(), "false".into()))
                 .1
                 == "true",
+            method: qps
+                .clone()
+                .find(|(k, _)| k == "method")
+                .unwrap_or(("".into(), "https".into()))
+                .1
+                .to_string(),
         };
         Ok(resolve_git(info.into()).await?)
     } else if let Some(minus_gitlab) = uri.strip_prefix("gitlab:") {
@@ -504,6 +515,12 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
                 .unwrap_or(("".into(), "false".into()))
                 .1
                 == "true",
+            method: qps
+                .clone()
+                .find(|(k, _)| k == "method")
+                .unwrap_or(("".into(), "https".into()))
+                .1
+                .to_string(),
         };
 
         Ok(resolve_git(info.into()).await?)
@@ -517,6 +534,56 @@ pub async fn resolve(uri: &str) -> anyhow::Result<Source> {
     } else if uri.starts_with("http://") || uri.starts_with("https://") {
         trace!("matched as http(s)");
         Ok(resolve_tar(uri).await?)
+    } else if let Some(minus_tangled) = uri.strip_prefix("tangled:") {
+        trace!("matched as tangled");
+        let url = Url::parse(&format!("tangled://{}", minus_tangled)).unwrap();
+        let mut parsed = url
+            .path_segments()
+            .ok_or_else(|| anyhow!("cannot be base"))?;
+        let owner = url.host().unwrap().to_string();
+        let repo = parsed
+            .next()
+            .ok_or_else(|| anyhow!("could not get repo"))?
+            .to_string();
+
+        let qps = url.query_pairs();
+
+        let info = GitXInfo {
+            owner,
+            repo,
+            r#ref: qps
+                .clone()
+                .find(|(k, _)| k == "ref")
+                .map(|(_, v)| v.to_string()),
+            rev: qps
+                .clone()
+                .find(|(k, _)| k == "rev")
+                .map(|(_, v)| v.to_string()),
+            dir: qps
+                .clone()
+                .find(|(k, _)| k == "dir")
+                .map(|(_, v)| v.to_string()),
+            host: qps
+                .clone()
+                .find(|(k, _)| k == "host")
+                .unwrap_or((Cow::from(""), Cow::from("tangled.org")))
+                .1
+                .to_string(),
+            submodules: qps
+                .clone()
+                .find(|(k, _)| k == "submodules")
+                .unwrap_or(("".into(), "false".into()))
+                .1
+                == "true",
+            method: qps
+                .clone()
+                .find(|(k, _)| k == "method")
+                .unwrap_or(("".into(), "https".into()))
+                .1
+                .to_string(),
+        };
+
+        Ok(resolve_git(info.into()).await?)
     } else {
         bail!("Could not parse URL Scheme for {uri}")
     }
