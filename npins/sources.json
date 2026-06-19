@@ -9,9 +9,9 @@
       },
       "branch": "monthly",
       "submodules": false,
-      "revision": "78d518f5ca32a86dc767de481160dbae640c70cf",
-      "url": "https://github.com/nix-community/fenix/archive/78d518f5ca32a86dc767de481160dbae640c70cf.tar.gz",
-      "hash": "sha256-EBpe7sXCPLs+qVePXbA7kc+Kmpmp0pWysEpjjEWTK+E="
+      "revision": "8160d67d2693a1f7ea219db159ccdc29ae632918",
+      "url": "https://github.com/nix-community/fenix/archive/8160d67d2693a1f7ea219db159ccdc29ae632918.tar.gz",
+      "hash": "sha256-1y6LHeumqA2lnUZap2yor+g4jMFtno5mx119LEv+dQQ="
     },
     "nilla": {
       "type": "Git",
@@ -40,5 +40,5 @@
       "hash": "sha256-0MAd+0mun3K/Ns8JATeHT1sX28faLII5hVLq0L3BdZU="
     }
   },
-  "version": 7
+  "version": 8
 }
