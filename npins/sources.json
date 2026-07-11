@@ -9,9 +9,9 @@
       },
       "branch": "monthly",
       "submodules": false,
-      "revision": "78d518f5ca32a86dc767de481160dbae640c70cf",
-      "url": "https://github.com/nix-community/fenix/archive/78d518f5ca32a86dc767de481160dbae640c70cf.tar.gz",
-      "hash": "sha256-EBpe7sXCPLs+qVePXbA7kc+Kmpmp0pWysEpjjEWTK+E="
+      "revision": "16810aa8f4ad89ca480b1513774e8b6f485fe368",
+      "url": "https://github.com/nix-community/fenix/archive/16810aa8f4ad89ca480b1513774e8b6f485fe368.tar.gz",
+      "hash": "sha256-GHrsl1+ysDFgmDQtQSqWS7TiYD2Q58VlwLvnf1+crJM="
     },
     "nilla": {
       "type": "Git",
@@ -22,9 +22,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "6d814dafa6f397ac2087333e5515c617faccba6f",
-      "url": "https://github.com/nilla-nix/nilla/archive/6d814dafa6f397ac2087333e5515c617faccba6f.tar.gz",
-      "hash": "sha256-A4zg3po1tyfh1if+LIllKtUGoWLFSwJSztvH2MG22qU="
+      "revision": "cf04f39bf6249a35b7964098c9c55104bfb43923",
+      "url": "https://github.com/nilla-nix/nilla/archive/cf04f39bf6249a35b7964098c9c55104bfb43923.tar.gz",
+      "hash": "sha256-H9Shp8A55U2kqy+zy+GaHmG379DjPrV33JXBq8Pi2vc="
     },
     "nixpkgs": {
       "type": "Git",
@@ -35,10 +35,10 @@
       },
       "branch": "nixos-unstable",
       "submodules": false,
-      "revision": "2fc6539b481e1d2569f25f8799236694180c0993",
-      "url": "https://github.com/nixos/nixpkgs/archive/2fc6539b481e1d2569f25f8799236694180c0993.tar.gz",
-      "hash": "sha256-0MAd+0mun3K/Ns8JATeHT1sX28faLII5hVLq0L3BdZU="
+      "revision": "0bb7ec54c8483066ec9d7720e780a5caa71f8612",
+      "url": "https://github.com/nixos/nixpkgs/archive/0bb7ec54c8483066ec9d7720e780a5caa71f8612.tar.gz",
+      "hash": "sha256-iffAls3iaNTyJC2faYcUXSI+Gp02cDjYl+MygxKl2GI="
     }
   },
-  "version": 7
+  "version": 8
 }
