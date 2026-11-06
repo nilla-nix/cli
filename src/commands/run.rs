@@ -86,16 +86,25 @@ pub async fn run_cmd(
         bail!("Package has no outputs");
     }
 
-    let main_prog = nix::get_main_program(
-        path.iter().next_back().unwrap().to_str().unwrap(),
-        entry.clone(),
-        name,
-        nix::GetMainProgramOpts { system },
-    )
-    .await;
+    let main = match &args.bin {
+        Some(bin) => {
+            debug!("Using binary {bin} from --bin");
+            bin.clone()
+        }
+        None => {
+            let main_prog = nix::get_main_program(
+                path.iter().next_back().unwrap().to_str().unwrap(),
+                entry.clone(),
+                name,
+                nix::GetMainProgramOpts { system },
+            )
+            .await;
 
-    let Ok(main) = main_prog else {
-        bail!("{:?}", main_prog.err());
+            let Ok(main) = main_prog else {
+                bail!("{:?}", main_prog.err());
+            };
+            main
+        }
     };
 
     let mut binary_path = PathBuf::from(value[0].clone());
