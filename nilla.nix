@@ -47,6 +47,16 @@ nilla.create ({ config }: {
 
           postInstall = ''
             installManPage ./target/release-tmp/build/nilla-*/out/nilla*
+
+            # Install shell completions that dynamically discover plugins
+            mkdir -p $out/share/zsh/site-functions
+            cp ${./completions/_nilla.zsh} $out/share/zsh/site-functions/_nilla
+            mkdir -p $out/share/bash-completion/completions
+            cp ${./completions/nilla.bash} $out/share/bash-completion/completions/nilla
+            mkdir -p $out/share/fish/vendor_completions.d
+            cp ${./completions/nilla.fish} $out/share/fish/vendor_completions.d/nilla.fish
+            mkdir -p $out/share/elvish/lib
+            cp ${./completions/nilla.elv} $out/share/elvish/lib/nilla.elv
           '';
 
           cargoLock.lockFile = ./Cargo.lock;

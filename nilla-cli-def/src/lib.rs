@@ -2,7 +2,7 @@ pub mod commands;
 
 use clap::{ArgAction, Parser, Subcommand};
 use commands::{
-    build::BuildArgs, completions::CompletionsArgs, run::RunArgs, shell::ShellArgs, show::ShowArgs,
+    build::BuildArgs, completions::CompletionsArgs, plugins::PluginsArgs, run::RunArgs, shell::ShellArgs, show::ShowArgs,
 };
 
 #[derive(Parser, Debug)]
@@ -63,6 +63,7 @@ pub enum Commands {
     Build(BuildArgs),
     #[command(alias = "completion")]
     Completions(CompletionsArgs),
+    Plugins(PluginsArgs),
     #[command(external_subcommand)]
     External(Vec<String>),
 }

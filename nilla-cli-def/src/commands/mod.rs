@@ -2,6 +2,7 @@ use clap::builder::styling::Style;
 
 pub mod build;
 pub mod completions;
+pub mod plugins;
 pub mod run;
 pub mod shell;
 pub mod show;
